@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Leverage System V3.2.5 (Stable)</title>
+    <style>
+        :root {
+            --bg-color: #eef2f3;
+            --note-color: #fff9c4;
+            --accent-color: #333;
+            --sidebar-width: 220px;
+            --sidebar-collapsed: 75px;
+        }
+
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; display: flex; height: 100vh; background-color: var(--bg-color); overflow: hidden; }
+
+        /* Sidebar */
+        .sidebar { width: var(--sidebar-width); background: var(--accent-color); color: white; display: flex; flex-direction: column; transition: width 0.3s ease; flex-shrink: 0; z-index: 10; }
+        .sidebar.collapsed { width: var(--sidebar-collapsed); }
+        .toggle-btn { padding: 20px; text-align: center; cursor: pointer; background: #222; font-size: 20px; border: none; color: white; width: 100%; }
+        .menu-item { padding: 15px 20px; cursor: pointer; display: flex; align-items: center; border: none; background: none; color: #ccc; width: 100%; text-align: left; font-weight: bold; transition: 0.2s; outline: none; }
+        .menu-item:hover { background: #444; color: white; }
+        .menu-item.active { color: white; border-left: 5px solid #fff; background: #444; }
+        .menu-icon { min-width: 35px; font-size: 1.5rem; text-align: center; }
+        .menu-text { margin-left: 15px; white-space: nowrap; transition: opacity 0.2s; }
+        .sidebar.collapsed .menu-text { display: none; }
+
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; width: 100%; }
+
+        /* Navigator */
+        .navigator { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; background: white; padding: 10px 25px; border-radius: 50px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .nav-arrow { cursor: pointer; font-size: 1.5rem; color: #333; user-select: none; padding: 0 10px; transition: color 0.2s; }
+        .nav-arrow:hover { color: #000; font-weight: bold; }
+        .display-box { text-align: center; min-width: 240px; cursor: pointer; padding: 5px 10px; border-radius: 8px; transition: background 0.2s; }
+        .display-box:hover { background: #f0f0f0; }
+        .today-highlight { color: #2ecc71 !important; }
+
+        /* Search Bar Style - Compact Size */
+        .search-container { width: 100%; max-width: 350px; margin-bottom: 25px; display: flex; }
+        .search-input { width: 100%; padding: 10px 18px; border-radius: 25px; border: 1px solid #ddd; outline: none; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; }
+
+        /* Note Design */
+        .note-container, .history-card-container { width: 100%; max-width: 380px; height: 520px; perspective: 1000px; position: relative; }
+        .note-inner, .history-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
+        .flipped .note-inner, .flipped .history-card-inner { transform: rotateY(180deg); }
+
+        .note-front, .note-back, .h-front, .h-back { 
+            position: absolute; width: 100%; height: 100%; 
+            backface-visibility: hidden !important; 
+            background: var(--note-color); box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            padding: 30px 25px; border-bottom-right-radius: 50px 5px; 
+            display: flex; flex-direction: column; 
+        }
+        .note-back, .h-back { transform: rotateY(180deg); background: #fffde7; }
+
+        .section { margin-bottom: 12px; }
+        .gold { color: #b8860b; font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; }
+        
+        .input-row { display: flex; align-items: flex-start; gap: 10px; margin-top: 5px; }
+        textarea.edit-input { 
+            flex: 1; border: none; border-bottom: 1px dashed #bbb; background: transparent; 
+            font-size: 14px; outline: none; resize: none; overflow: hidden;
+            min-height: 20px; line-height: 1.4; font-family: inherit;
+        }
+        
+        .locked-past-ui { background-color: #f5f5f5 !important; }
+        .flip-btn { position: absolute; bottom: 20px; right: 25px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 10px; padding: 6px 12px; z-index: 10; }
+
+        .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; width: 100%; max-width: 1100px; }
+        .h-entry { font-size: 13px; margin: 6px 0; line-height: 1.4; word-wrap: break-word; border-bottom: 1px solid rgba(0,0,0,0.03); padding-bottom: 2px; }
+
+        .view-panel { width: 100%; display: none; flex-direction: column; align-items: center; }
+        .view-panel.active { display: flex; }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar" id="sidebar">
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+        <button id="nav-today" class="menu-item active" onclick="switchTab('today')">
+            <span class="menu-icon">📅</span><span class="menu-text">TODAY</span>
+        </button>
+        <button id="nav-history" class="menu-item" onclick="switchTab('history')">
+            <span class="menu-icon">📜</span><span class="menu-text">HISTORY</span>
+        </button>
+        <button id="nav-settings" class="menu-item" onclick="switchTab('settings')">
+            <span class="menu-icon">⚙️</span><span class="menu-text">SETTINGS</span>
+        </button>
+    </nav>
+
+    <div class="main-content">
+        <div class="navigator">
+            <div class="nav-arrow" onclick="changeScope(-1)">❮</div>
+            <div class="display-box" onclick="resetToCurrent()" title="Reset to present">
+                <span id="nav-main-text" style="font-weight:bold; display:block;"></span>
+                <span id="nav-sub-text" style="font-size:0.8rem; color:#777;"></span>
+            </div>
+            <div class="nav-arrow" onclick="changeScope(1)">❯</div>
+        </div>
+
+        <div id="today-view" class="view-panel active">
+            <div class="note-container" id="main-note">
+                <div class="note-inner">
+                    <div class="note-front" id="front-face">
+                        <div class="section gold">⭐ (0) <span id="display-goal"></span></div>
+                        <div class="section"><strong>(1) MUST</strong>
+                            <div class="input-row">
+                                <input type="checkbox" class="edit-input" id="check-1" onchange="runLogic()">
+                                <textarea class="edit-input" id="task-1" oninput="expand(this); autoSave()" rows="1"></textarea>
+                            </div>
+                        </div>
+                        <div id="sec-2" class="section" style="opacity:0.3; pointer-events:none;"><strong>{2} NEXT</strong>
+                            <div class="input-row">
+                                <input type="checkbox" class="edit-input" id="check-2a" onchange="runLogic()">
+                                <textarea class="edit-input" id="task-2a" oninput="expand(this); autoSave()" rows="1"></textarea>
+                            </div>
+                            <div class="input-row">
+                                <input type="checkbox" class="edit-input" id="check-2b" onchange="runLogic()">
+                                <textarea class="edit-input" id="task-2b" oninput="expand(this); autoSave()" rows="1"></textarea>
+                            </div>
+                        </div>
+                        <div id="sec-4" class="section" style="opacity:0.3; pointer-events:none;"><strong>[4] BEST</strong>
+                            <div class="input-row">
+                                <input type="checkbox" class="edit-input" id="check-4" onchange="autoSave()">
+                                <textarea class="edit-input" id="task-4" oninput="expand(this); autoSave()" rows="1"></textarea>
+                            </div>
+                        </div>
+                        <button class="flip-btn" onclick="flip('main-note')">FLIP ↻</button>
+                    </div>
+                    <div class="note-back" id="back-face">
+                        <h3>Brain Dump</h3>
+                        <textarea id="brain-dump" class="edit-input" style="flex:1; border:none;" placeholder="Your vision..." oninput="autoSave()"></textarea>
+                        <button class="flip-btn" onclick="flip('main-note')">BACK ↺</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="history-view" class="view-panel">
+            <div class="search-container">
+                <input type="text" id="hist-search" class="search-input" placeholder="Search (date, task, dump...)" oninput="renderHistory()">
+            </div>
+            <div id="history-grid" class="history-grid"></div>
+        </div>
+
+        <div id="settings-view" class="view-panel">
+            <div style="background:white; padding:30px; border-radius:15px; width:400px; box-shadow:0 5px 20px rgba(0,0,0,0.1);">
+                <h3>Settings</h3>
+                <label style="font-size: 13px;">Core Goal (Vision 0):</label>
+                <input type="text" id="goal-input" style="width:100%; padding:10px; margin: 10px 0; border:1px solid #ddd; border-radius:5px;">
+                <button onclick="saveGoal()" style="width:100%; padding:12px; background:#2ecc71; color:white; border:none; border-radius:8px; cursor:pointer;">Save Goal</button>
+                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+                <button onclick="exportJSON()" style="width:100%; padding:10px; background:#3498db; color:white; border:none; border-radius:8px; cursor:pointer;">Export Backup</button>
+                <button onclick="document.getElementById('fileIn').click()" style="width:100%; padding:10px; margin-top:10px; background:#e67e22; color:white; border:none; border-radius:8px; cursor:pointer;">Import Backup</button>
+                <input type="file" id="fileIn" style="display:none" onchange="importJSON(event)">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function getSafeId(date) { return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0'); }
+        let currentDay = new Date(); currentDay.setHours(0,0,0,0);
+        const REAL_TODAY = new Date(); REAL_TODAY.setHours(0,0,0,0);
+        let activeTab = 'today';
+        let viewingWeekStart = getWeekStart(new Date());
+
+        window.onload = () => { refreshUI(); };
+
+        function getWeekStart(d) {
+            let date = new Date(d);
+            let day = date.getDay();
+            return new Date(date.setDate(date.getDate() - day));
+        }
+
+        function expand(el) { el.style.height = 'auto'; el.style.height = (el.scrollHeight) + 'px'; }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+        function flip(id) { document.getElementById(id).classList.toggle('flipped'); }
+
+        function resetToCurrent() {
+            if (activeTab === 'today') currentDay = new Date(REAL_TODAY);
+            else viewingWeekStart = getWeekStart(new Date());
+            document.getElementById('hist-search').value = "";
+            refreshUI();
+        }
+
+        function refreshUI() {
+            const navMain = document.getElementById('nav-main-text');
+            const navSub = document.getElementById('nav-sub-text');
+            
+            if (activeTab === 'today') {
+                navMain.innerText = currentDay.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                let weekNum = Math.ceil((((currentDay - new Date(currentDay.getFullYear(), 0, 1)) / 86400000) + 1) / 7);
+                navSub.innerText = `Week No: ${weekNum}`;
+                if(currentDay.getTime() === REAL_TODAY.getTime()) navMain.classList.add('today-highlight');
+                else navMain.classList.remove('today-highlight');
+
+                const isPast = currentDay < REAL_TODAY;
+                document.querySelectorAll('.edit-input').forEach(el => el.disabled = isPast);
+                document.getElementById('front-face').className = isPast ? 'note-front locked-past-ui' : 'note-front';
+                loadNoteData();
+            } else if (activeTab === 'history') {
+                let weekNum = Math.ceil((((viewingWeekStart - new Date(viewingWeekStart.getFullYear(), 0, 1)) / 86400000) + 1) / 7);
+                navMain.innerText = "Weekly Overview";
+                navSub.innerText = `Week No: ${weekNum}`;
+                renderHistory();
+            }
+            document.getElementById('display-goal').innerText = localStorage.getItem('levGoal') || "Set Goal";
+        }
+
+        function renderHistory() {
+            const grid = document.getElementById('history-grid'); grid.innerHTML = "";
+            const query = document.getElementById('hist-search').value.toLowerCase();
+            const allNotes = JSON.parse(localStorage.getItem('levNotes') || "{}");
+            
+            for (let i = 0; i < 7; i++) {
+                let d = new Date(viewingWeekStart); d.setDate(d.getDate() + i);
+                let id = getSafeId(d); let data = allNotes[id];
+                if (!data) continue;
+
+                const contentText = `${id} ${data.t1} ${data.t2a} ${data.t2b} ${data.t4} ${data.bd} ${d.toLocaleDateString()}`.toLowerCase();
+                if (query && !contentText.includes(query)) continue;
+
+                const container = document.createElement('div');
+                container.className = 'history-card-container'; container.id = 'hist-' + id;
+                container.innerHTML = `
+                    <div class="history-card-inner">
+                        <div class="h-front">
+                            <div style="border-bottom:1px solid #ddd; padding-bottom:5px; margin-bottom:10px; font-weight:bold; cursor:pointer;" onclick="goToDate('${id}')">${d.toLocaleDateString('en-US', {weekday:'short', day:'numeric'})} 🔗</div>
+                            <div class="h-entry"><b>(1)</b> ${data.t1 || '---'}</div>
+                            <div class="h-entry"><b>{2}</b> ${data.t2a || '---'}</div>
+                            <div class="h-entry"><b>{2}</b> ${data.t2b || '---'}</div>
+                            <div class="h-entry"><b>[4]</b> ${data.t4 || '---'}</div>
+                            <button class="flip-btn" onclick="flip('hist-${id}')">FLIP ↻</button>
+                        </div>
+                        <div class="h-back">
+                            <div style="font-weight:bold; margin-bottom:10px;">Brain Dump</div>
+                            <p style="font-size:13px; white-space:pre-wrap; overflow-y:auto; flex:1;">${data.bd || 'Empty'}</p>
+                            <button class="flip-btn" onclick="flip('hist-${id}')">BACK ↺</button>
+                        </div>
+                    </div>`;
+                grid.appendChild(container);
+            }
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            document.getElementById('nav-' + tab).classList.add('active');
+            document.querySelectorAll('.view-panel').forEach(v => v.classList.remove('active'));
+            document.getElementById(tab + '-view').classList.add('active');
+            refreshUI();
+        }
+
+        function changeScope(gap) {
+            if (activeTab === 'today') currentDay.setDate(currentDay.getDate() + gap);
+            else viewingWeekStart.setDate(viewingWeekStart.getDate() + (gap * 7));
+            refreshUI();
+        }
+
+        function goToDate(id) { currentDay = new Date(id); switchTab('today'); }
+        function loadNoteData() {
+            const id = getSafeId(currentDay);
+            const data = JSON.parse(localStorage.getItem('levNotes') || "{}")[id] || {};
+            document.getElementById('task-1').value = data.t1 || "";
+            document.getElementById('check-1').checked = data.c1 || false;
+            document.getElementById('task-2a').value = data.t2a || "";
+            document.getElementById('check-2a').checked = data.c2a || false;
+            document.getElementById('task-2b').value = data.t2b || "";
+            document.getElementById('check-2b').checked = data.c2b || false;
+            document.getElementById('task-4').value = data.t4 || "";
+            document.getElementById('check-4').checked = data.c4 || false;
+            document.getElementById('brain-dump').value = data.bd || "";
+            ['task-1', 'task-2a', 'task-2b', 'task-4'].forEach(f => expand(document.getElementById(f)));
+            runLogic(false);
+        }
+
+        function autoSave() {
+            if (currentDay < REAL_TODAY) return;
+            const id = getSafeId(currentDay);
+            const allNotes = JSON.parse(localStorage.getItem('levNotes') || "{}");
+            allNotes[id] = {
+                t1: document.getElementById('task-1').value, c1: document.getElementById('check-1').checked,
+                t2a: document.getElementById('task-2a').value, c2a: document.getElementById('check-2a').checked,
+                t2b: document.getElementById('task-2b').value, c2b: document.getElementById('check-2b').checked,
+                t4: document.getElementById('task-4').value, c4: document.getElementById('check-4').checked,
+                bd: document.getElementById('brain-dump').value
+            };
+            localStorage.setItem('levNotes', JSON.stringify(allNotes));
+        }
+
+        function runLogic(save = true) {
+            const c1 = document.getElementById('check-1').checked;
+            document.getElementById('sec-2').style.opacity = c1 ? "1" : "0.3";
+            document.getElementById('sec-2').style.pointerEvents = c1 ? "auto" : "none";
+            const c2 = document.getElementById('check-2a').checked && document.getElementById('check-2b').checked;
+            document.getElementById('sec-4').style.opacity = (c1 && c2) ? "1" : "0.3";
+            document.getElementById('sec-4').style.pointerEvents = (c1 && c2) ? "auto" : "none";
+            if(save) autoSave();
+        }
+
+        function saveGoal() { localStorage.setItem('levGoal', document.getElementById('goal-input').value); alert("Goal Saved!"); refreshUI(); }
+        function exportJSON() {
+            const data = { notes: JSON.parse(localStorage.getItem('levNotes')), goal: localStorage.getItem('levGoal') };
+            const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'leverage_v325.json'; a.click();
+        }
+        function importJSON(e) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const data = JSON.parse(event.target.result);
+                localStorage.setItem('levNotes', JSON.stringify(data.notes));
+                localStorage.setItem('levGoal', data.goal);
+                location.reload();
+            };
+            reader.readAsText(e.target.files[0]);
+        }
+    </script>
+</body>
+</html>
