@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Leverage System V3.2.7</title>
+    <title>Daily Leverage System V3.3.2</title>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
@@ -61,19 +61,17 @@
         .view-panel { width: 100%; display: none; flex-direction: column; align-items: center; }
         .view-panel.active { display: flex; }
 
-        /* About Page Styling */
+        /* Content Card for Settings & About */
         .content-card { background: white; padding: 25px; border-radius: 15px; width: 100%; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .about-title { font-size: 1.5rem; color: #333; margin: 0 0 5px 0; }
-        .about-tagline { font-style: italic; color: #2ecc71; font-weight: bold; margin-bottom: 20px; display: block; }
         .about-text p { font-size: 14px; line-height: 1.6; color: #444; margin-bottom: 15px; }
         .equation-box { background: #f9f9f9; padding: 15px; border-left: 4px solid #b8860b; margin: 20px 0; }
         .about-list { list-style: none; padding: 0; font-size: 14px; }
         .about-list li { margin-bottom: 10px; line-height: 1.5; }
-        .about-list b { color: #333; }
         
-        /* History extras */
+        .setting-item { margin-bottom: 20px; }
+        .setting-item label { display: block; font-size: 11px; color: #666; margin-bottom: 5px; font-weight: bold; }
+        
         .history-grid { display: flex; flex-direction: column; gap: 20px; width: 100%; }
-        .h-entry { font-size: 13px; margin: 6px 0; line-height: 1.4; word-wrap: break-word; }
     </style>
 </head>
 <body>
@@ -92,7 +90,7 @@
             <div class="note-container" id="main-note">
                 <div class="note-inner">
                     <div class="note-front" id="front-face">
-                        <div class="section gold">⭐ (0) <span id="display-goal"></span></div>
+                        <div class="section gold">(0) ⭐ <span id="display-goal"></span></div>
                         <div class="section"><strong>(1) MUST</strong>
                             <div class="input-row">
                                 <input type="checkbox" id="check-1" onchange="runLogic()">
@@ -119,7 +117,7 @@
                     </div>
                     <div class="note-back" id="back-face">
                         <h3>Brain Dump</h3>
-                        <textarea id="brain-dump" class="edit-input" style="flex:1; border:none;" placeholder="Your vision..." oninput="autoSave()"></textarea>
+                        <textarea id="brain-dump" class="edit-input" style="flex:1; border:none;" placeholder="Dump scattered thoughts and wanna dos here while grinding on your vision (0+1+2=4)..." oninput="autoSave()"></textarea>
                         <button class="flip-btn" onclick="flip('main-note')">BACK ↺</button>
                     </div>
                 </div>
@@ -127,24 +125,47 @@
         </div>
 
         <div id="history-view" class="view-panel">
-            <input type="text" id="hist-search" class="edit-input" style="background:white; border-radius:20px; padding:10px; margin-bottom:20px; text-align:center;" placeholder="Search history..." oninput="renderHistory()">
+            <input type="text" id="hist-search" class="edit-input" style="background:white; border-radius:20px; padding:10px; margin-bottom:20px; text-align:center; max-width:300px;" placeholder="Search notes..." oninput="renderHistory()">
             <div id="history-grid" class="history-grid"></div>
         </div>
 
         <div id="settings-view" class="view-panel">
             <div class="content-card">
-                <h3>Settings</h3>
-                <input type="text" id="goal-input" placeholder="Vision 0" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;">
-                <button onclick="saveGoal()" style="width:100%; padding:10px; background:#2ecc71; color:white; border:none; border-radius:5px; cursor:pointer;">Save Goal</button>
-                <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-                <button onclick="exportJSON()" style="width:100%; padding:10px; background:#3498db; color:white; border:none; border-radius:5px; cursor:pointer;">Backup All Data</button>
+                <h3 style="margin-top:0;">Settings</h3>
+                
+                <div class="setting-item">
+                    <label>VISION 0 (CORE GOAL)</label>
+                    <input type="text" id="goal-input" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">
+                </div>
+
+                <div class="setting-item">
+                    <label>WEEK STARTS ON</label>
+                    <select id="week-start-select" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">
+                        <option value="0">Sunday</option>
+                        <option value="1">Monday</option>
+                        <option value="2">Tuesday</option>
+                        <option value="3">Wednesday</option>
+                        <option value="4">Thursday</option>
+                        <option value="5">Friday</option>
+                        <option value="6">Saturday</option>
+                    </select>
+                </div>
+
+                <button onclick="saveSettings()" style="width:100%; padding:12px; background:#2ecc71; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">Apply Changes</button>
+                
+                <hr style="margin:25px 0; border:0; border-top:1px solid #eee;">
+                
+                <button onclick="exportJSON()" style="width:100%; padding:10px; background:#3498db; color:white; border:none; border-radius:5px; cursor:pointer; margin-bottom:10px;">Export Backup</button>
+                
+                <button onclick="document.getElementById('fileIn').click()" style="width:100%; padding:10px; background:#e67e22; color:white; border:none; border-radius:5px; cursor:pointer;">Import Backup</button>
+                <input type="file" id="fileIn" style="display:none" onchange="importJSON(event)">
             </div>
         </div>
 
         <div id="about-view" class="view-panel">
             <div class="content-card about-text">
-                <h1 class="about-title">Daily Leverage System</h1>
-                <span class="about-tagline">Master Your Day. Achieve Your Vision.</span>
+                <h2 style="margin-top:0;">Daily Leverage System</h2>
+                <span style="font-style: italic; color: #2ecc71; font-weight: bold; margin-bottom: 20px; display: block;">Master Your Day. Achieve Your Vision.</span>
                 
                 <p>The Daily Leverage System is a high-performance application designed to help you master your focus through <b>The Daily Leverage Method</b>. Created by Bangladeshi productivity enthusiast <b>Munadil Shafat</b>, this framework is one of the world’s simplest and most effective systems for goal achievement.</p>
 
@@ -169,9 +190,9 @@
                     <li><b>Find Your Leverage:</b> Once your three missions are complete, ask yourself: <i>"What’s one more thing I can do to make today my best?"</i></li>
                 </ul>
 
-                <p>This <b>"One More"</b> is your Leverage. It is the secret that fuels a chain reaction—leading to a second, a third, and a fourth win. That is the power of the Daily Leverage System. It doesn't just help you work; <b>it helps you win.</b></p>
+                <p>This <b>"One More"</b> is your Leverage. It is the secret that fuels a chain reaction. That is the power of the Daily Leverage System. It doesn't just help you work; <b>it helps you win.</b></p>
                 
-                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.2.7 | Stable Milestone</div>
+                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.3.2 | Stable Milestone</div>
             </div>
         </div>
 
@@ -188,15 +209,31 @@
         let currentDay = new Date(); currentDay.setHours(0,0,0,0);
         const REAL_TODAY = new Date(); REAL_TODAY.setHours(0,0,0,0);
         let activeTab = 'today';
-        let viewingWeekStart = getWeekStart(new Date());
+        let viewingWeekStart = null;
+
+        window.onload = () => { 
+            const savedStart = localStorage.getItem('levWeekStart');
+            if(savedStart !== null) document.getElementById('week-start-select').value = savedStart;
+            viewingWeekStart = getWeekStart(new Date());
+            refreshUI(); 
+        };
 
         function getWeekStart(d) {
             let date = new Date(d);
-            let day = date.getDay();
-            return new Date(date.setDate(date.getDate() - day));
+            let startDay = parseInt(localStorage.getItem('levWeekStart') || "0"); 
+            let diff = (date.getDay() - startDay + 7) % 7;
+            date.setDate(date.getDate() - diff);
+            return date;
         }
 
-        window.onload = () => { refreshUI(); };
+        function getWeekNumber(d) {
+            let date = new Date(d);
+            let startDay = parseInt(localStorage.getItem('levWeekStart') || "0");
+            let yearStart = new Date(date.getFullYear(), 0, 1);
+            while(yearStart.getDay() !== startDay) { yearStart.setDate(yearStart.getDate() + 1); }
+            if (date < yearStart) return 1;
+            return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+        }
 
         function expand(el) { el.style.height = 'auto'; el.style.height = (el.scrollHeight) + 'px'; }
         function flip(id) { document.getElementById(id).classList.toggle('flipped'); }
@@ -208,16 +245,16 @@
             
             if (activeTab === 'today') {
                 navMain.innerText = currentDay.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-                let weekNum = Math.ceil((((currentDay - new Date(currentDay.getFullYear(), 0, 1)) / 86400000) + 1) / 7);
-                navSub.innerText = `Week No: ${weekNum}`;
+                navSub.innerText = `Week No: ${getWeekNumber(currentDay)}`;
                 navMain.className = (currentDay.getTime() === REAL_TODAY.getTime()) ? 'nav-main-text today-highlight' : 'nav-main-text';
                 loadNoteData();
             } else {
                 navMain.innerText = activeTab.toUpperCase();
-                navSub.innerText = "Navigation Panel";
+                navSub.innerText = (activeTab === 'history') ? `Week No: ${getWeekNumber(viewingWeekStart)}` : "System Control";
                 if(activeTab === 'history') renderHistory();
             }
             document.getElementById('display-goal').innerText = localStorage.getItem('levGoal') || "Set Goal";
+            document.getElementById('goal-input').value = localStorage.getItem('levGoal') || "";
         }
 
         function switchTab(tab) {
@@ -268,7 +305,7 @@
             refreshUI();
         }
 
-        function goToDate(id) { currentDay = new Date(id); switchTab('today'); }
+        function goToDate(id) { currentDay = new Date(id); viewingWeekStart = getWeekStart(currentDay); switchTab('today'); }
 
         function loadNoteData() {
             const id = getSafeId(currentDay);
@@ -309,11 +346,33 @@
             if(save) autoSave();
         }
 
-        function saveGoal() { localStorage.setItem('levGoal', document.getElementById('goal-input').value); alert("Goal Saved!"); refreshUI(); }
+        function saveSettings() { 
+            localStorage.setItem('levGoal', document.getElementById('goal-input').value); 
+            localStorage.setItem('levWeekStart', document.getElementById('week-start-select').value);
+            viewingWeekStart = getWeekStart(currentDay);
+            alert("Settings Applied!"); 
+            refreshUI(); 
+        }
+
         function exportJSON() {
-            const data = { notes: JSON.parse(localStorage.getItem('levNotes')), goal: localStorage.getItem('levGoal') };
+            const data = { notes: JSON.parse(localStorage.getItem('levNotes')), goal: localStorage.getItem('levGoal'), weekStart: localStorage.getItem('levWeekStart') };
             const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'leverage_v327.json'; a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'leverage_backup.json'; a.click();
+        }
+
+        function importJSON(e) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    if(data.notes) localStorage.setItem('levNotes', JSON.stringify(data.notes));
+                    if(data.goal) localStorage.setItem('levGoal', data.goal);
+                    if(data.weekStart) localStorage.setItem('levWeekStart', data.weekStart);
+                    alert("Backup restored successfully!");
+                    location.reload();
+                } catch(err) { alert("Invalid Backup File!"); }
+            };
+            reader.readAsText(e.target.files[0]);
         }
     </script>
 </body>
