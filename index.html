@@ -16,15 +16,13 @@
 
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    
-    <script src="https://unpkg.com/dropbox/dist/Dropbox-sdk.min.js"></script>
-
     <style>
         :root { --bg-color: #eef2f3; --note-color: #fff9c4; --accent-color: #333; }
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         .main-content { width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center; padding: 15px; flex-grow: 1; }
 
+        /* Navigator */
         .navigator { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background: white; padding: 8px 20px; border-radius: 50px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .nav-arrow { cursor: pointer; font-size: 1.2rem; color: #333; user-select: none; padding: 0 10px; }
         .nav-arrow.disabled { opacity: 0.2; cursor: not-allowed; pointer-events: none; }
@@ -32,14 +30,17 @@
         .nav-main-text { font-weight: bold; font-size: 0.9rem; display: block; }
         .nav-sub-text { font-size: 0.75rem; color: #777; }
 
+        /* Reminder Bar */
         #backup-reminder { width: 100%; background: #e74c3c; color: white; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-size: 12px; text-align: center; display: none; cursor: pointer; }
 
+        /* Note Cards */
         .note-container { width: 100%; height: 520px; perspective: 1000px; position: relative; margin-bottom: 20px; }
         .note-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
         .flipped .note-inner { transform: rotateY(180deg); }
         .note-front, .note-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: var(--note-color); box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 30px 25px; border-bottom-right-radius: 50px 5px; display: flex; flex-direction: column; }
         .note-back { transform: rotateY(180deg); background: #fffde7; }
 
+        /* History Grid */
         .history-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; }
         .history-card-container { height: 260px; perspective: 1000px; position: relative; }
         .history-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
@@ -64,18 +65,16 @@
         .view-panel.active { display: flex; }
         .content-card { background: white; padding: 25px; border-radius: 15px; width: 100%; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
 
+        /* ABOUT STYLE */
         .about-text p { font-size: 14px; line-height: 1.6; color: #444; margin-bottom: 15px; }
         .equation-box { background: #f9f9f9; padding: 15px; border-left: 4px solid #b8860b; margin: 20px 0; }
         .about-list { list-style: none; padding: 0; font-size: 14px; }
         .about-list li { margin-bottom: 10px; line-height: 1.5; }
-
-        /* Cloud Sync Style */
-        .btn-cloud { width: 100%; padding: 12px; background: #0061FF; color: white; border: none; margin-bottom: 10px; cursor: pointer; font-weight: bold; border-radius: 8px; }
     </style>
 </head>
 <body>
     <div class="main-content">
-        <div id="backup-reminder" onclick="switchTab('settings')">⚠️ Backup Due! Click here to Sync with Dropbox.</div>
+        <div id="backup-reminder" onclick="exportJSON()">⚠️ Backup Due! Click here to save data to your device.</div>
 
         <div class="navigator">
             <div id="nav-prev" class="nav-arrow" onclick="changeScope(-1)">❮</div>
@@ -123,12 +122,10 @@
                 <h3>Settings</h3>
                 <div style="margin-bottom:15px;"><label style="font-size:11px;">VISION 0</label><input type="text" id="goal-input" style="width:100%; padding:8px; border:1px solid #ddd;"></div>
                 <div style="margin-bottom:15px;"><label style="font-size:11px;">WEEK STARTS</label><select id="week-start-select" style="width:100%; padding:8px; border:1px solid #ddd;"><option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
-                <button onclick="saveSettings()" style="width:100%; padding:10px; background:#2ecc71; color:white; border:none; cursor:pointer; font-weight:bold; border-radius:8px;">Apply Changes</button>
+                <button onclick="saveSettings()" style="width:100%; padding:10px; background:#2ecc71; color:white; border:none; cursor:pointer; font-weight:bold;">Apply Changes</button>
                 <hr style="margin:20px 0;">
-                
-                <button onclick="doDropboxAuth()" class="btn-cloud">Sync with Dropbox</button>
-                <button onclick="exportJSON()" style="width:100%; padding:8px; background:#3498db; color:white; border:none; margin-bottom:5px; cursor:pointer; border-radius:8px;">Export Offline Backup</button>
-                <button onclick="document.getElementById('fileIn').click()" style="width:100%; padding:8px; background:#e67e22; color:white; border:none; cursor:pointer; border-radius:8px;">Import Offline Backup</button>
+                <button onclick="exportJSON()" style="width:100%; padding:8px; background:#3498db; color:white; border:none; margin-bottom:5px; cursor:pointer;">Export Backup</button>
+                <button onclick="document.getElementById('fileIn').click()" style="width:100%; padding:8px; background:#e67e22; color:white; border:none; cursor:pointer;">Import Backup</button>
                 <input type="file" id="fileIn" style="display:none" onchange="importJSON(event)">
             </div>
         </div>
@@ -136,10 +133,23 @@
         <div id="about-view" class="view-panel">
             <div class="content-card about-text">
                 <h2 style="margin-top:0;">Daily Leverage System</h2>
-                <p>Version 3.5.5 | Master Your Focus</p>
+                <span style="font-style: italic; color: #2ecc71; font-weight: bold; margin-bottom: 20px; display: block;">Master Your Day. Achieve Your Vision.</span>
+                <p>The Daily Leverage System is a high-performance application designed to help you master your focus through <b>The Daily Leverage Method</b>. Created by Bangladeshi productivity enthusiast <b>Munadil Shafat</b>, this framework is one of the world’s simplest and most effective systems for goal achievement.</p>
+
                 <div class="equation-box">
-                    <h3>The Equation: $$0+1+2=4$$</h3>
+                    <h3 style="margin-top:0;">The Science of the Equation: $$0+1+2=4$$</h3>
+                    <p style="margin-bottom:0;">This system is built on a unique mathematical philosophy where your energy is multiplied, not just added:</p>
                 </div>
+
+                <ul class="about-list">
+                    <li><b>0 (GOAL):</b> Your <b>North Star</b>. Every action must serve your ultimate purpose.</li>
+                    <li><b>1 (MUST):</b> Your <b>Lead Action</b>. The single most important move that defines your progress today.</li>
+                    <li><b>2 (NEXT):</b> Two <b>Flow Actions</b>. Supporting moves that maintain your momentum.</li>
+                    <li><b>= 4 (BEST):</b> The <b>Victory</b>. One more act that transforms a productive day into your Best day.</li>
+                </ul>
+
+                <p>This <b>"One More"</b> is your Leverage. It fuels a chain reaction that transforms vision into reality. Small daily wins lead to massive lifelong breakthroughs.</p>
+                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.5.5 | Stable</div>
             </div>
         </div>
 
@@ -152,9 +162,7 @@
     </div>
 
     <script>
-        const DBX_APP_KEY = 'xanmojpw4u428fz';
-        const REDIRECT_URI = 'https://dailyleveragesystem.netlify.app/';
-
+        // (বাকি স্ক্রিপ্ট আগের মতোই থাকবে)
         function getSafeId(date) { return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0'); }
         let currentDay = new Date(); currentDay.setHours(0,0,0,0);
         const REAL_TODAY = new Date(); REAL_TODAY.setHours(0,0,0,0);
@@ -167,13 +175,6 @@
             viewingWeekStart = getWeekStart(new Date());
             checkBackupReminder();
             refreshUI(); 
-
-            // Handle Dropbox Auth Return
-            const accessToken = Dropbox.DropboxAuth.getUtilsFromUrl(window.location.href).accessToken;
-            if (accessToken) {
-                window.history.replaceState({}, document.title, window.location.pathname);
-                uploadToDropbox(accessToken);
-            }
         };
 
         function checkBackupReminder() {
@@ -232,14 +233,30 @@
 
         function renderHistory() {
             const grid = document.getElementById('history-grid'); grid.innerHTML = "";
+            const query = document.getElementById('hist-search').value.toLowerCase();
             const allNotes = JSON.parse(localStorage.getItem('levNotes') || "{}");
             for (let i = 6; i >= 0; i--) {
                 let d = new Date(viewingWeekStart); d.setDate(d.getDate() + i);
                 let id = getSafeId(d); let data = allNotes[id];
                 if (!data) continue;
+                if (query && !id.includes(query) && !JSON.stringify(data).toLowerCase().includes(query)) continue;
                 const container = document.createElement('div');
                 container.className = 'history-card-container'; container.id = 'hist-' + id;
-                container.innerHTML = `<div class="history-card-inner"><div class="h-front"><div style="font-weight:bold; cursor:pointer;" onclick="goToDate('${id}')">${d.toLocaleDateString('en-US', {weekday:'short', day:'numeric'})} 🔗</div><div class="h-entry"><b>(1)</b> ${data.t1 || ''}</div><button class="flip-btn" onclick="flip('hist-${id}')">FLIP</button></div><div class="h-back"><p>${data.bd || ''}</p><button class="flip-btn" onclick="flip('hist-${id}')">BACK</button></div></div>`;
+                container.innerHTML = `
+                    <div class="history-card-inner">
+                        <div class="h-front">
+                            <div style="font-weight:bold; cursor:pointer; margin-bottom:8px; font-size:12px;" onclick="goToDate('${id}')">${d.toLocaleDateString('en-US', {weekday:'short', day:'numeric'})} 🔗</div>
+                            <div class="h-entry"><b>(1)</b> ${data.t1 || ''}</div>
+                            <div class="h-entry"><b>{2}</b> ${data.t2a || ''}</div>
+                            <div class="h-entry"><b>{2}</b> ${data.t2b || ''}</div>
+                            <div class="h-entry"><b>[4]</b> ${data.t4 || ''}</div>
+                            <button class="flip-btn" onclick="flip('hist-${id}')">FLIP</button>
+                        </div>
+                        <div class="h-back">
+                            <p style="font-size:10px; line-height:1.4;">${data.bd || 'Empty Brain Dump'}</p>
+                            <button class="flip-btn" onclick="flip('hist-${id}')">BACK</button>
+                        </div>
+                    </div>`;
                 grid.appendChild(container);
             }
         }
@@ -254,8 +271,10 @@
         }
 
         function changeScope(gap) {
+            const tomorrow = new Date(REAL_TODAY); tomorrow.setDate(tomorrow.getDate() + 1);
             if (activeTab === 'today') {
                 let target = new Date(currentDay); target.setDate(target.getDate() + gap);
+                if (gap > 0 && target > tomorrow) return;
                 currentDay = target;
             } else viewingWeekStart.setDate(viewingWeekStart.getDate() + (gap * 7));
             refreshUI();
@@ -275,6 +294,7 @@
             document.getElementById('task-4').value = data.t4 || "";
             document.getElementById('check-4').checked = data.c4 || false;
             document.getElementById('brain-dump').value = data.bd || "";
+            ['task-1', 'task-2a', 'task-2b', 'task-4'].forEach(f => expand(document.getElementById(f)));
             runLogic(false);
         }
 
@@ -299,30 +319,8 @@
         function saveSettings() { 
             localStorage.setItem('levGoal', document.getElementById('goal-input').value); 
             localStorage.setItem('levWeekStart', document.getElementById('week-start-select').value);
+            viewingWeekStart = getWeekStart(currentDay);
             alert("Settings Saved!"); refreshUI(); 
-        }
-
-        // --- Dropbox Sync Logic ---
-        function doDropboxAuth() {
-            const dbxAuth = new Dropbox.DropboxAuth({ clientId: DBX_APP_KEY });
-            const authUrl = dbxAuth.getAuthenticationUrl(REDIRECT_URI);
-            window.location.href = authUrl;
-        }
-
-        async function uploadToDropbox(token) {
-            const dbx = new Dropbox.Dropbox({ accessToken: token });
-            const data = { notes: JSON.parse(localStorage.getItem('levNotes')), goal: localStorage.getItem('levGoal'), weekStart: localStorage.getItem('levWeekStart') };
-            
-            dbx.filesUpload({ path: '/leverage_backup.json', contents: JSON.stringify(data), mode: 'overwrite' })
-                .then(() => {
-                    localStorage.setItem('levLastBackup', REAL_TODAY.toISOString());
-                    alert("Dropbox Sync Successful!");
-                    location.reload();
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert("Sync Failed. Please check Redirect URI.");
-                });
         }
 
         function exportJSON() {
@@ -330,6 +328,8 @@
             const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); 
             a.download = `leverage_backup_${getSafeId(REAL_TODAY)}.json`; a.click();
+            localStorage.setItem('levLastBackup', REAL_TODAY.toISOString());
+            document.getElementById('backup-reminder').style.display = 'none';
         }
 
         function importJSON(e) {
@@ -337,6 +337,8 @@
             reader.onload = (event) => {
                 const data = JSON.parse(event.target.result);
                 if(data.notes) localStorage.setItem('levNotes', JSON.stringify(data.notes));
+                if(data.goal) localStorage.setItem('levGoal', data.goal);
+                if(data.weekStart) localStorage.setItem('levWeekStart', data.weekStart);
                 location.reload();
             };
             reader.readAsText(e.target.files[0]);
