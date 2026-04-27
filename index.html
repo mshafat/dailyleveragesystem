@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Leverage System V3.5.4</title>
+    <title>Daily Leverage System V3.5.5</title>
     
     <link rel="icon" type="image/jpeg" href="logoforapp.jpg">
-    <link rel="shortcut icon" type="image/jpeg" href="logoforapp.jpg">
     <link rel="apple-touch-icon" href="logoforapp.jpg">
     
+    <link rel="manifest" href="data:application/json,{'name':'Daily Leverage System','short_name':'Daily Leverage','icons':[{'src':'logoforapp.jpg','sizes':'192x192','type':'image/jpeg'}],'start_url':'.','display':'standalone','background_color':'#eef2f3'}">
+
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Daily Leverage System">
     <meta name="application-name" content="Daily Leverage System">
-    
-    <link rel="manifest" href="data:application/json,{'name':'Daily Leverage System','short_name':'Daily Leverage','icons':[{'src':'logoforapp.jpg','sizes':'192x192','type':'image/jpeg'},{'src':'logoforapp.jpg','sizes':'512x512','type':'image/jpeg'}],'start_url':'.','display':'standalone','background_color':'#eef2f3'}">
 
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -74,7 +73,6 @@
     </style>
 </head>
 <body>
-
     <div class="main-content">
         <div id="backup-reminder" onclick="exportJSON()">⚠️ Backup Due! Click here to save data to your device.</div>
 
@@ -151,7 +149,7 @@
                 </ul>
 
                 <p>This <b>"One More"</b> is your Leverage. It fuels a chain reaction that transforms vision into reality. Small daily wins lead to massive lifelong breakthroughs.</p>
-                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.5.4 | Stable</div>
+                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.5.5 | Stable</div>
             </div>
         </div>
 
@@ -164,6 +162,7 @@
     </div>
 
     <script>
+        // (বাকি স্ক্রিপ্ট আগের মতোই থাকবে)
         function getSafeId(date) { return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0'); }
         let currentDay = new Date(); currentDay.setHours(0,0,0,0);
         const REAL_TODAY = new Date(); REAL_TODAY.setHours(0,0,0,0);
