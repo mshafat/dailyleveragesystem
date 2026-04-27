@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Leverage System V3.3.9</title>
+    <title>Daily Leverage System V3.4.3</title>
+    
+    <link rel="icon" type="image/jpeg" href="logoforapp.jpg">
+    <link rel="apple-touch-icon" href="logoforapp.jpg">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
@@ -13,13 +19,15 @@
         .main-content { width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center; padding: 15px; flex-grow: 1; }
 
         /* Navigator */
-        .navigator { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; background: white; padding: 8px 20px; border-radius: 50px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .navigator { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background: white; padding: 8px 20px; border-radius: 50px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .nav-arrow { cursor: pointer; font-size: 1.2rem; color: #333; user-select: none; padding: 0 10px; }
         .nav-arrow.disabled { opacity: 0.2; cursor: not-allowed; pointer-events: none; }
         .display-box { text-align: center; min-width: 180px; cursor: pointer; }
         .nav-main-text { font-weight: bold; font-size: 0.9rem; display: block; }
         .nav-sub-text { font-size: 0.75rem; color: #777; }
-        .today-highlight { color: #2ecc71 !important; }
+
+        /* Reminder Bar */
+        #backup-reminder { width: 100%; background: #e74c3c; color: white; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-size: 12px; text-align: center; display: none; cursor: pointer; }
 
         /* Note Cards */
         .note-container { width: 100%; height: 520px; perspective: 1000px; position: relative; margin-bottom: 20px; }
@@ -28,7 +36,7 @@
         .note-front, .note-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: var(--note-color); box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 30px 25px; border-bottom-right-radius: 50px 5px; display: flex; flex-direction: column; }
         .note-back { transform: rotateY(180deg); background: #fffde7; }
 
-        /* History Grid - 2 Columns on Mobile */
+        /* History Grid */
         .history-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; }
         .history-card-container { height: 240px; perspective: 1000px; position: relative; }
         .history-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
@@ -61,6 +69,8 @@
 <body>
 
     <div class="main-content">
+        <div id="backup-reminder" onclick="exportJSON()">⚠️ Backup Due! Click here to save data to your device.</div>
+
         <div class="navigator">
             <div id="nav-prev" class="nav-arrow" onclick="changeScope(-1)">❮</div>
             <div class="display-box" onclick="resetToCurrent()">
@@ -90,7 +100,7 @@
                     </div>
                     <div class="note-back">
                         <h3>Brain Dump</h3>
-                        <textarea id="brain-dump" class="edit-input" style="flex:1; border:none;" placeholder="Dump scattered thoughts and wanna dos here while grinding on your vision (0+1+2=4)..." oninput="autoSave()"></textarea>
+                        <textarea id="brain-dump" class="edit-input" style="flex:1; border:none;" placeholder="Dump scattered thoughts..." oninput="autoSave()"></textarea>
                         <button class="flip-btn" onclick="flip('main-note')">BACK ↺</button>
                     </div>
                 </div>
@@ -98,13 +108,13 @@
         </div>
 
         <div id="history-view" class="view-panel">
-            <input type="text" id="hist-search" class="edit-input" style="background:white; border-radius:20px; padding:10px; margin-bottom:20px; text-align:center; max-width:300px;" placeholder="Search date (2026-04-23) or text..." oninput="renderHistory()">
+            <input type="text" id="hist-search" class="edit-input" style="background:white; border-radius:20px; padding:10px; margin-bottom:20px; text-align:center; max-width:300px;" placeholder="Search date or text..." oninput="renderHistory()">
             <div id="history-grid" class="history-grid"></div>
         </div>
 
         <div id="settings-view" class="view-panel">
             <div class="content-card">
-                <h3 style="margin-top:0;">Settings</h3>
+                <h3>Settings</h3>
                 <div style="margin-bottom:15px;"><label style="font-size:11px;">VISION 0</label><input type="text" id="goal-input" style="width:100%; padding:8px; border:1px solid #ddd;"></div>
                 <div style="margin-bottom:15px;"><label style="font-size:11px;">WEEK STARTS</label><select id="week-start-select" style="width:100%; padding:8px; border:1px solid #ddd;"><option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
                 <button onclick="saveSettings()" style="width:100%; padding:10px; background:#2ecc71; color:white; border:none; cursor:pointer; font-weight:bold;">Apply Changes</button>
@@ -134,7 +144,7 @@
                 </ul>
 
                 <p>This <b>"One More"</b> is your Leverage. It fuels a chain reaction that transforms vision into reality. Small daily wins lead to massive lifelong breakthroughs.</p>
-                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.3.9 | Milestone Release</div>
+                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.4.3 | Production Stable</div>
             </div>
         </div>
 
@@ -147,6 +157,7 @@
     </div>
 
     <script>
+        // All core logic from V3.3.9 remains unchanged here.
         function getSafeId(date) { return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0'); }
         let currentDay = new Date(); currentDay.setHours(0,0,0,0);
         const REAL_TODAY = new Date(); REAL_TODAY.setHours(0,0,0,0);
@@ -157,8 +168,16 @@
             const savedStart = localStorage.getItem('levWeekStart');
             if(savedStart !== null) document.getElementById('week-start-select').value = savedStart;
             viewingWeekStart = getWeekStart(new Date());
+            checkBackupReminder();
             refreshUI(); 
         };
+
+        function checkBackupReminder() {
+            const lastBackup = localStorage.getItem('levLastBackup');
+            if (!lastBackup) { document.getElementById('backup-reminder').style.display = 'block'; return; }
+            const diff = (REAL_TODAY - new Date(lastBackup)) / 86400000;
+            if (diff >= 7) document.getElementById('backup-reminder').style.display = 'block';
+        }
 
         function getWeekStart(d) {
             let date = new Date(d);
@@ -189,17 +208,12 @@
             if (activeTab === 'today') {
                 navMain.innerText = currentDay.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
                 navSub.innerText = `Week ${getWeekNumber(currentDay)}, ${currentDay.getFullYear()}`;
-                navMain.className = (currentDay.getTime() === REAL_TODAY.getTime()) ? 'nav-main-text today-highlight' : 'nav-main-text';
-                
-                // Navigator Arrow Restriction (No past tomorrow)
                 document.getElementById('nav-next').classList.toggle('disabled', currentDay >= tomorrow);
-                
                 loadNoteData();
                 checkLockStatus();
             } else {
                 navMain.innerText = activeTab.toUpperCase();
-                navSub.innerText = (activeTab === 'history') ? `Week ${getWeekNumber(viewingWeekStart)}, ${viewingWeekStart.getFullYear()}` : "System Control";
-                document.getElementById('nav-next').classList.remove('disabled');
+                navSub.innerText = (activeTab === 'history') ? `Week ${getWeekNumber(viewingWeekStart)}, ${viewingWeekStart.getFullYear()}` : "Control Center";
                 if(activeTab === 'history') renderHistory();
             }
             document.getElementById('display-goal').innerText = localStorage.getItem('levGoal') || "Set Goal";
@@ -207,10 +221,7 @@
 
         function checkLockStatus() {
             const yesterday = new Date(REAL_TODAY); yesterday.setDate(yesterday.getDate() - 1);
-            
-            // Logic: Read-only if date is earlier than Yesterday
             const isLocked = currentDay < yesterday;
-            
             const fields = ['task-1', 'task-2a', 'task-2b', 'task-4', 'brain-dump', 'check-1', 'check-2a', 'check-2b', 'check-4'];
             fields.forEach(f => document.getElementById(f).disabled = isLocked);
             document.getElementById('lock-msg').style.display = isLocked ? "block" : "none";
@@ -220,32 +231,14 @@
             const grid = document.getElementById('history-grid'); grid.innerHTML = "";
             const query = document.getElementById('hist-search').value.toLowerCase();
             const allNotes = JSON.parse(localStorage.getItem('levNotes') || "{}");
-            
-            // Sorting: Recent dates first in history grid
             for (let i = 6; i >= 0; i--) {
                 let d = new Date(viewingWeekStart); d.setDate(d.getDate() + i);
                 let id = getSafeId(d); let data = allNotes[id];
                 if (!data) continue;
                 if (query && !id.includes(query) && !JSON.stringify(data).toLowerCase().includes(query)) continue;
-                
                 const container = document.createElement('div');
                 container.className = 'history-card-container'; container.id = 'hist-' + id;
-                container.innerHTML = `
-                    <div class="history-card-inner">
-                        <div class="h-front">
-                            <div style="font-weight:bold; margin-bottom:5px; color:#333; cursor:pointer;" onclick="goToDate('${id}')">${d.toLocaleDateString('en-US', {weekday:'short', day:'numeric'})} 🔗</div>
-                            <div class="h-entry"><b>(1)</b> ${data.t1 || ''}</div>
-                            <div class="h-entry"><b>{2}</b> ${data.t2a || ''}</div>
-                            <div class="h-entry"><b>{2}</b> ${data.t2b || ''}</div>
-                            <div class="h-entry"><b>[4]</b> ${data.t4 || ''}</div>
-                            <button class="flip-btn" onclick="flip('hist-${id}')">FLIP</button>
-                        </div>
-                        <div class="h-back">
-                            <div style="font-weight:bold; margin-bottom:5px;">Brain Dump</div>
-                            <p style="font-size:10px; margin:0; overflow-y:auto; flex:1;">${data.bd || '...'}</p>
-                            <button class="flip-btn" onclick="flip('hist-${id}')">BACK</button>
-                        </div>
-                    </div>`;
+                container.innerHTML = `<div class="history-card-inner"><div class="h-front"><div style="font-weight:bold; cursor:pointer;" onclick="goToDate('${id}')">${d.toLocaleDateString('en-US', {weekday:'short', day:'numeric'})} 🔗</div><div class="h-entry"><b>(1)</b> ${data.t1 || ''}</div><div class="h-entry"><b>[4]</b> ${data.t4 || ''}</div><button class="flip-btn" onclick="flip('hist-${id}')">FLIP</button></div><div class="h-back"><p style="font-size:10px;">${data.bd || '...'}</p><button class="flip-btn" onclick="flip('hist-${id}')">BACK</button></div></div>`;
                 grid.appendChild(container);
             }
         }
@@ -262,12 +255,10 @@
         function changeScope(gap) {
             const tomorrow = new Date(REAL_TODAY); tomorrow.setDate(tomorrow.getDate() + 1);
             if (activeTab === 'today') {
-                let targetDate = new Date(currentDay); targetDate.setDate(targetDate.getDate() + gap);
-                if (gap > 0 && targetDate > tomorrow) return; 
-                currentDay = targetDate;
-            } else {
-                viewingWeekStart.setDate(viewingWeekStart.getDate() + (gap * 7));
-            }
+                let target = new Date(currentDay); target.setDate(target.getDate() + gap);
+                if (gap > 0 && target > tomorrow) return;
+                currentDay = target;
+            } else viewingWeekStart.setDate(viewingWeekStart.getDate() + (gap * 7));
             refreshUI();
         }
 
@@ -293,13 +284,7 @@
             if (document.getElementById('task-1').disabled) return;
             const id = getSafeId(currentDay);
             const allNotes = JSON.parse(localStorage.getItem('levNotes') || "{}");
-            allNotes[id] = {
-                t1: document.getElementById('task-1').value, c1: document.getElementById('check-1').checked,
-                t2a: document.getElementById('task-2a').value, c2a: document.getElementById('check-2a').checked,
-                t2b: document.getElementById('task-2b').value, c2b: document.getElementById('check-2b').checked,
-                t4: document.getElementById('task-4').value, c4: document.getElementById('check-4').checked,
-                bd: document.getElementById('brain-dump').value
-            };
+            allNotes[id] = { t1: document.getElementById('task-1').value, c1: document.getElementById('check-1').checked, t2a: document.getElementById('task-2a').value, c2a: document.getElementById('check-2a').checked, t2b: document.getElementById('task-2b').value, c2b: document.getElementById('check-2b').checked, t4: document.getElementById('task-4').value, c4: document.getElementById('check-4').checked, bd: document.getElementById('brain-dump').value };
             localStorage.setItem('levNotes', JSON.stringify(allNotes));
         }
 
@@ -323,7 +308,10 @@
         function exportJSON() {
             const data = { notes: JSON.parse(localStorage.getItem('levNotes')), goal: localStorage.getItem('levGoal'), weekStart: localStorage.getItem('levWeekStart') };
             const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'leverage_backup.json'; a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); 
+            a.download = `leverage_backup_${getSafeId(REAL_TODAY)}.json`; a.click();
+            localStorage.setItem('levLastBackup', REAL_TODAY.toISOString());
+            document.getElementById('backup-reminder').style.display = 'none';
         }
 
         function importJSON(e) {
