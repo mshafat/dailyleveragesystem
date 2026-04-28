@@ -17,7 +17,7 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-        :root { --bg-color: #eef2f3; --note-color: #fff9c4; --accent-color: #333; }
+        :root { --bg-color: #eef2f3; --note-color: #fff9c4; --accent-color: #333; --highlight-color: #2ecc71; }
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         .main-content { width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center; padding: 15px; flex-grow: 1; }
@@ -27,8 +27,10 @@
         .nav-arrow { cursor: pointer; font-size: 1.2rem; color: #333; user-select: none; padding: 0 10px; }
         .nav-arrow.disabled { opacity: 0.2; cursor: not-allowed; pointer-events: none; }
         .display-box { text-align: center; min-width: 180px; cursor: pointer; }
-        .nav-main-text { font-weight: bold; font-size: 0.9rem; display: block; }
+        .nav-main-text { font-weight: bold; font-size: 0.9rem; display: block; transition: color 0.3s ease; }
         .nav-sub-text { font-size: 0.75rem; color: #777; }
+        /* Highlight Class */
+        .is-current { color: var(--highlight-color) !important; }
 
         /* Reminder Bar */
         #backup-reminder { width: 100%; background: #e74c3c; color: white; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-size: 12px; text-align: center; display: none; cursor: pointer; }
@@ -47,7 +49,11 @@
         .h-front, .h-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: var(--note-color); box-shadow: 0 4px 10px rgba(0,0,0,0.05); padding: 12px; border-bottom-right-radius: 20px 3px; display: flex; flex-direction: column; font-size: 11px; overflow: hidden; }
         .h-back { transform: rotateY(180deg); background: #fffde7; }
         .flipped .history-card-inner { transform: rotateY(180deg); }
-        .h-entry { margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-bottom: 1px solid rgba(0,0,0,0.03); line-height: 1.4; }
+        
+        /* Updated History Entry for more content visibility */
+        .h-entry { margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; border-bottom: 1px solid rgba(0,0,0,0.03); line-height: 1.3; display: -webkit-box; -webkit-box-orient: vertical; }
+        .h-entry.must { -webkit-line-clamp: 2; max-height: 2.6em; } /* Show up to 2 lines for MUST */
+        .h-entry.next { -webkit-line-clamp: 2; max-height: 2.6em; } /* Show up to 2 lines for NEXT */
 
         .section { margin-bottom: 12px; }
         .gold { color: #b8860b; font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; }
@@ -65,7 +71,6 @@
         .view-panel.active { display: flex; }
         .content-card { background: white; padding: 25px; border-radius: 15px; width: 100%; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
 
-        /* ABOUT STYLE */
         .about-text p { font-size: 14px; line-height: 1.6; color: #444; margin-bottom: 15px; }
         .equation-box { background: #f9f9f9; padding: 15px; border-left: 4px solid #b8860b; margin: 20px 0; }
         .about-list { list-style: none; padding: 0; font-size: 14px; }
@@ -162,7 +167,6 @@
     </div>
 
     <script>
-        // (বাকি স্ক্রিপ্ট আগের মতোই থাকবে)
         function getSafeId(date) { return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0'); }
         let currentDay = new Date(); currentDay.setHours(0,0,0,0);
         const REAL_TODAY = new Date(); REAL_TODAY.setHours(0,0,0,0);
@@ -210,16 +214,29 @@
             const navSub = document.getElementById('nav-sub-text');
             const tomorrow = new Date(REAL_TODAY); tomorrow.setDate(tomorrow.getDate() + 1);
             
+            // Visual Cue: Highlight color if today or current week
             if (activeTab === 'today') {
                 navMain.innerText = currentDay.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
                 navSub.innerText = `Week ${getWeekNumber(currentDay)}, ${currentDay.getFullYear()}`;
+                
+                if(currentDay.getTime() === REAL_TODAY.getTime()) navMain.classList.add('is-current');
+                else navMain.classList.remove('is-current');
+
                 document.getElementById('nav-next').classList.toggle('disabled', currentDay >= tomorrow);
                 loadNoteData();
                 checkLockStatus();
             } else {
                 navMain.innerText = activeTab.toUpperCase();
                 navSub.innerText = (activeTab === 'history') ? `Week ${getWeekNumber(viewingWeekStart)}, ${viewingWeekStart.getFullYear()}` : "Control Center";
-                if(activeTab === 'history') renderHistory();
+                
+                if(activeTab === 'history') {
+                    const currentWeekStart = getWeekStart(REAL_TODAY);
+                    if(viewingWeekStart.getTime() === currentWeekStart.getTime()) navMain.classList.add('is-current');
+                    else navMain.classList.remove('is-current');
+                    renderHistory();
+                } else {
+                    navMain.classList.remove('is-current');
+                }
             }
             document.getElementById('display-goal').innerText = localStorage.getItem('levGoal') || "Set Goal";
         }
@@ -246,9 +263,9 @@
                     <div class="history-card-inner">
                         <div class="h-front">
                             <div style="font-weight:bold; cursor:pointer; margin-bottom:8px; font-size:12px;" onclick="goToDate('${id}')">${d.toLocaleDateString('en-US', {weekday:'short', day:'numeric'})} 🔗</div>
-                            <div class="h-entry"><b>(1)</b> ${data.t1 || ''}</div>
-                            <div class="h-entry"><b>{2}</b> ${data.t2a || ''}</div>
-                            <div class="h-entry"><b>{2}</b> ${data.t2b || ''}</div>
+                            <div class="h-entry must"><b>(1)</b> ${data.t1 || ''}</div>
+                            <div class="h-entry next"><b>{2}</b> ${data.t2a || ''}</div>
+                            <div class="h-entry next"><b>{2}</b> ${data.t2b || ''}</div>
                             <div class="h-entry"><b>[4]</b> ${data.t4 || ''}</div>
                             <button class="flip-btn" onclick="flip('hist-${id}')">FLIP</button>
                         </div>
