@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Leverage System V3.5.7</title>
+    <title>Daily Leverage System V3.5.8</title>
     
-    <link rel="icon" type="image/jpeg" href="logoforapp.jpg">
-    <link rel="apple-touch-icon" href="logoforapp.jpg">
+    <link rel="icon" type="image/png" href="logoforapp.png">
+    <link rel="apple-touch-icon" href="logoforapp.png">
     
-    <link rel="manifest" href="data:application/json,{'name':'Daily Leverage System','short_name':'Daily Leverage','icons':[{'src':'logoforapp.jpg','sizes':'192x192','type':'image/jpeg'}],'start_url':'.','display':'standalone','background_color':'#eef2f3'}">
+    <link rel="manifest" href="manifest.json">
 
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Daily Leverage System">
-    <meta name="application-name" content="Daily Leverage System">
+    <meta name="apple-mobile-web-app-title" content="Daily Leverage">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#2ecc71">
 
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
     <style>
         :root { --bg-color: #eef2f3; --note-color: #fff9c4; --accent-color: #333; --highlight-color: #2ecc71; }
         * { box-sizing: border-box; }
@@ -30,20 +32,16 @@
         .nav-main-text { font-weight: bold; font-size: 0.9rem; display: block; transition: color 0.3s ease; color: #333; }
         .nav-sub-text { font-size: 0.75rem; color: #777; transition: color 0.3s ease; }
         
-        /* Highlight Class */
         .is-current { color: var(--highlight-color) !important; }
 
-        /* Reminder Bar */
         #backup-reminder { width: 100%; background: #e74c3c; color: white; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-size: 12px; text-align: center; display: none; cursor: pointer; }
 
-        /* Note Cards */
         .note-container { width: 100%; height: 520px; perspective: 1000px; position: relative; margin-bottom: 20px; }
         .note-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
         .flipped .note-inner { transform: rotateY(180deg); }
         .note-front, .note-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: var(--note-color); box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 30px 25px; border-bottom-right-radius: 50px 5px; display: flex; flex-direction: column; }
         .note-back { transform: rotateY(180deg); background: #fffde7; }
 
-        /* History Grid */
         .history-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; }
         .history-card-container { height: 260px; perspective: 1000px; position: relative; }
         .history-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
@@ -154,7 +152,7 @@
                 </ul>
 
                 <p>This <b>"One More"</b> is your Leverage. It fuels a chain reaction that transforms vision into reality. Small daily wins lead to massive lifelong breakthroughs.</p>
-                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.5.7 (Stable Milestone)</div>
+                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.5.8 (Stable Milestone)</div>
             </div>
         </div>
 
@@ -202,25 +200,18 @@
         function refreshUI() {
             const navMain = document.getElementById('nav-main-text');
             const navSub = document.getElementById('nav-sub-text');
-            
             navMain.classList.remove('is-current');
             navSub.classList.remove('is-current');
 
             if (activeTab === 'today') {
                 navMain.innerText = currentDay.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
                 navSub.innerText = `Week ${getWeekNumber(currentDay)}, ${currentDay.getFullYear()}`;
-                
-                if(currentDay.getTime() === REAL_TODAY.getTime()) {
-                    navMain.classList.add('is-current');
-                }
+                if(currentDay.getTime() === REAL_TODAY.getTime()) navMain.classList.add('is-current');
                 loadNoteData();
                 checkLockStatus();
             } else if (activeTab === 'history') {
                 navMain.innerText = 'HISTORY';
-                const weekNum = getWeekNumber(viewingWeekStart);
-                const yearNum = viewingWeekStart.getFullYear();
-                navSub.innerText = `Week ${weekNum}, ${yearNum}`;
-                
+                navSub.innerText = `Week ${getWeekNumber(viewingWeekStart)}, ${viewingWeekStart.getFullYear()}`;
                 const actualWeekStart = getWeekStart(REAL_TODAY);
                 if(viewingWeekStart.getTime() === actualWeekStart.getTime()) {
                     navMain.classList.add('is-current');
