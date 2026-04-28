@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Leverage System V3.5.5</title>
+    <title>Daily Leverage System V3.5.7</title>
     
     <link rel="icon" type="image/jpeg" href="logoforapp.jpg">
     <link rel="apple-touch-icon" href="logoforapp.jpg">
@@ -27,8 +27,9 @@
         .nav-arrow { cursor: pointer; font-size: 1.2rem; color: #333; user-select: none; padding: 0 10px; }
         .nav-arrow.disabled { opacity: 0.2; cursor: not-allowed; pointer-events: none; }
         .display-box { text-align: center; min-width: 180px; cursor: pointer; }
-        .nav-main-text { font-weight: bold; font-size: 0.9rem; display: block; transition: color 0.3s ease; }
-        .nav-sub-text { font-size: 0.75rem; color: #777; }
+        .nav-main-text { font-weight: bold; font-size: 0.9rem; display: block; transition: color 0.3s ease; color: #333; }
+        .nav-sub-text { font-size: 0.75rem; color: #777; transition: color 0.3s ease; }
+        
         /* Highlight Class */
         .is-current { color: var(--highlight-color) !important; }
 
@@ -50,10 +51,9 @@
         .h-back { transform: rotateY(180deg); background: #fffde7; }
         .flipped .history-card-inner { transform: rotateY(180deg); }
         
-        /* Updated History Entry for more content visibility */
-        .h-entry { margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; border-bottom: 1px solid rgba(0,0,0,0.03); line-height: 1.3; display: -webkit-box; -webkit-box-orient: vertical; }
-        .h-entry.must { -webkit-line-clamp: 2; max-height: 2.6em; } /* Show up to 2 lines for MUST */
-        .h-entry.next { -webkit-line-clamp: 2; max-height: 2.6em; } /* Show up to 2 lines for NEXT */
+        .h-entry { margin-bottom: 4px; border-bottom: 1px solid rgba(0,0,0,0.03); line-height: 1.3; word-wrap: break-word; }
+        .h-entry.must, .h-entry.next { display: block; }
+        .h-entry.best { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; max-height: 2.6em; overflow: hidden; text-overflow: ellipsis; }
 
         .section { margin-bottom: 12px; }
         .gold { color: #b8860b; font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; }
@@ -154,7 +154,7 @@
                 </ul>
 
                 <p>This <b>"One More"</b> is your Leverage. It fuels a chain reaction that transforms vision into reality. Small daily wins lead to massive lifelong breakthroughs.</p>
-                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.5.5 | Stable</div>
+                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.5.7 (Stable Milestone)</div>
             </div>
         </div>
 
@@ -181,18 +181,12 @@
             refreshUI(); 
         };
 
-        function checkBackupReminder() {
-            const lastBackup = localStorage.getItem('levLastBackup');
-            if (!lastBackup) { document.getElementById('backup-reminder').style.display = 'block'; return; }
-            const diff = (REAL_TODAY - new Date(lastBackup)) / 86400000;
-            if (diff >= 7) document.getElementById('backup-reminder').style.display = 'block';
-        }
-
         function getWeekStart(d) {
             let date = new Date(d);
             let startDay = parseInt(localStorage.getItem('levWeekStart') || "0"); 
             let diff = (date.getDay() - startDay + 7) % 7;
             date.setDate(date.getDate() - diff);
+            date.setHours(0,0,0,0);
             return date;
         }
 
@@ -205,47 +199,39 @@
             return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
         }
 
-        function expand(el) { el.style.height = 'auto'; el.style.height = (el.scrollHeight) + 'px'; }
-        function flip(id) { document.getElementById(id).classList.toggle('flipped'); }
-        function resetToCurrent() { currentDay = new Date(REAL_TODAY); viewingWeekStart = getWeekStart(new Date()); refreshUI(); }
-
         function refreshUI() {
             const navMain = document.getElementById('nav-main-text');
             const navSub = document.getElementById('nav-sub-text');
-            const tomorrow = new Date(REAL_TODAY); tomorrow.setDate(tomorrow.getDate() + 1);
             
-            // Visual Cue: Highlight color if today or current week
+            navMain.classList.remove('is-current');
+            navSub.classList.remove('is-current');
+
             if (activeTab === 'today') {
                 navMain.innerText = currentDay.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
                 navSub.innerText = `Week ${getWeekNumber(currentDay)}, ${currentDay.getFullYear()}`;
                 
-                if(currentDay.getTime() === REAL_TODAY.getTime()) navMain.classList.add('is-current');
-                else navMain.classList.remove('is-current');
-
-                document.getElementById('nav-next').classList.toggle('disabled', currentDay >= tomorrow);
+                if(currentDay.getTime() === REAL_TODAY.getTime()) {
+                    navMain.classList.add('is-current');
+                }
                 loadNoteData();
                 checkLockStatus();
+            } else if (activeTab === 'history') {
+                navMain.innerText = 'HISTORY';
+                const weekNum = getWeekNumber(viewingWeekStart);
+                const yearNum = viewingWeekStart.getFullYear();
+                navSub.innerText = `Week ${weekNum}, ${yearNum}`;
+                
+                const actualWeekStart = getWeekStart(REAL_TODAY);
+                if(viewingWeekStart.getTime() === actualWeekStart.getTime()) {
+                    navMain.classList.add('is-current');
+                    navSub.classList.add('is-current');
+                }
+                renderHistory();
             } else {
                 navMain.innerText = activeTab.toUpperCase();
-                navSub.innerText = (activeTab === 'history') ? `Week ${getWeekNumber(viewingWeekStart)}, ${viewingWeekStart.getFullYear()}` : "Control Center";
-                
-                if(activeTab === 'history') {
-                    const currentWeekStart = getWeekStart(REAL_TODAY);
-                    if(viewingWeekStart.getTime() === currentWeekStart.getTime()) navMain.classList.add('is-current');
-                    else navMain.classList.remove('is-current');
-                    renderHistory();
-                } else {
-                    navMain.classList.remove('is-current');
-                }
+                navSub.innerText = (activeTab === 'settings') ? "Control Center" : "System Information";
             }
             document.getElementById('display-goal').innerText = localStorage.getItem('levGoal') || "Set Goal";
-        }
-
-        function checkLockStatus() {
-            const yesterday = new Date(REAL_TODAY); yesterday.setDate(yesterday.getDate() - 1);
-            const isLocked = currentDay < yesterday;
-            ['task-1', 'task-2a', 'task-2b', 'task-4', 'brain-dump', 'check-1', 'check-2a', 'check-2b', 'check-4'].forEach(f => document.getElementById(f).disabled = isLocked);
-            document.getElementById('lock-msg').style.display = isLocked ? "block" : "none";
         }
 
         function renderHistory() {
@@ -266,7 +252,7 @@
                             <div class="h-entry must"><b>(1)</b> ${data.t1 || ''}</div>
                             <div class="h-entry next"><b>{2}</b> ${data.t2a || ''}</div>
                             <div class="h-entry next"><b>{2}</b> ${data.t2b || ''}</div>
-                            <div class="h-entry"><b>[4]</b> ${data.t4 || ''}</div>
+                            <div class="h-entry best"><b>[4]</b> ${data.t4 || ''}</div>
                             <button class="flip-btn" onclick="flip('hist-${id}')">FLIP</button>
                         </div>
                         <div class="h-back">
@@ -288,16 +274,33 @@
         }
 
         function changeScope(gap) {
-            const tomorrow = new Date(REAL_TODAY); tomorrow.setDate(tomorrow.getDate() + 1);
             if (activeTab === 'today') {
                 let target = new Date(currentDay); target.setDate(target.getDate() + gap);
-                if (gap > 0 && target > tomorrow) return;
                 currentDay = target;
-            } else viewingWeekStart.setDate(viewingWeekStart.getDate() + (gap * 7));
+            } else {
+                viewingWeekStart.setDate(viewingWeekStart.getDate() + (gap * 7));
+            }
             refreshUI();
         }
 
-        function goToDate(id) { currentDay = new Date(id); viewingWeekStart = getWeekStart(currentDay); switchTab('today'); }
+        function resetToCurrent() { 
+            currentDay = new Date(REAL_TODAY); 
+            viewingWeekStart = getWeekStart(REAL_TODAY); 
+            refreshUI(); 
+        }
+
+        function goToDate(id) { 
+            currentDay = new Date(id); 
+            viewingWeekStart = getWeekStart(currentDay); 
+            switchTab('today'); 
+        }
+
+        function checkLockStatus() {
+            const yesterday = new Date(REAL_TODAY); yesterday.setDate(yesterday.getDate() - 1);
+            const isLocked = currentDay < yesterday;
+            ['task-1', 'task-2a', 'task-2b', 'task-4', 'brain-dump', 'check-1', 'check-2a', 'check-2b', 'check-4'].forEach(f => document.getElementById(f).disabled = isLocked);
+            document.getElementById('lock-msg').style.display = isLocked ? "block" : "none";
+        }
 
         function loadNoteData() {
             const id = getSafeId(currentDay);
@@ -333,10 +336,20 @@
             if(save) autoSave();
         }
 
+        function expand(el) { el.style.height = 'auto'; el.style.height = (el.scrollHeight) + 'px'; }
+        function flip(id) { document.getElementById(id).classList.toggle('flipped'); }
+
+        function checkBackupReminder() {
+            const lastBackup = localStorage.getItem('levLastBackup');
+            if (!lastBackup) { document.getElementById('backup-reminder').style.display = 'block'; return; }
+            const diff = (REAL_TODAY - new Date(lastBackup)) / 86400000;
+            if (diff >= 7) document.getElementById('backup-reminder').style.display = 'block';
+        }
+
         function saveSettings() { 
             localStorage.setItem('levGoal', document.getElementById('goal-input').value); 
             localStorage.setItem('levWeekStart', document.getElementById('week-start-select').value);
-            viewingWeekStart = getWeekStart(currentDay);
+            viewingWeekStart = getWeekStart(REAL_TODAY);
             alert("Settings Saved!"); refreshUI(); 
         }
 
@@ -349,16 +362,21 @@
             document.getElementById('backup-reminder').style.display = 'none';
         }
 
-        function importJSON(e) {
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
             const reader = new FileReader();
-            reader.onload = (event) => {
-                const data = JSON.parse(event.target.result);
-                if(data.notes) localStorage.setItem('levNotes', JSON.stringify(data.notes));
-                if(data.goal) localStorage.setItem('levGoal', data.goal);
-                if(data.weekStart) localStorage.setItem('levWeekStart', data.weekStart);
-                location.reload();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if(data.notes) localStorage.setItem('levNotes', JSON.stringify(data.notes));
+                    if(data.goal) localStorage.setItem('levGoal', data.goal);
+                    if(data.weekStart !== undefined) localStorage.setItem('levWeekStart', data.weekStart);
+                    alert("Backup Imported!");
+                    location.reload();
+                } catch (err) { alert("Invalid File"); }
             };
-            reader.readAsText(e.target.files[0]);
+            reader.readAsText(file);
         }
     </script>
 </body>
