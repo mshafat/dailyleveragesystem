@@ -15,9 +15,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#2ecc71">
 
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    
     <style>
         :root { --bg-color: #eef2f3; --note-color: #fff9c4; --accent-color: #333; --highlight-color: #2ecc71; }
         * { box-sizing: border-box; }
@@ -140,8 +137,8 @@
                 <p>The Daily Leverage System is a high-performance application designed to help you master your focus through <b>The Daily Leverage Method</b>. Created by Bangladeshi productivity enthusiast <b>Munadil Shafat</b>, this framework is one of the world’s simplest and most effective systems for goal achievement.</p>
 
                 <div class="equation-box">
-                    <h3 style="margin-top:0;">The Science of the Equation: $$0+1+2=4$$</h3>
-                    <p style="margin-bottom:0;">This system is built on a unique mathematical philosophy where your energy is multiplied, not just added:</p>
+                    <h3 style="margin-top:0;">The Science of the Equation: 0 + 1 + 2 = 4</h3>
+                    <p style="font-family: 'Courier New', monospace; font-weight: bold; margin-bottom: 0;">[Vision: 0] + [Lead: 1] + [Flow: 2] = [Victory: 4]</p>
                 </div>
 
                 <ul class="about-list">
@@ -165,6 +162,7 @@
     </div>
 
     <script>
+        // Core Logic
         function getSafeId(date) { return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0'); }
         let currentDay = new Date(); currentDay.setHours(0,0,0,0);
         const REAL_TODAY = new Date(); REAL_TODAY.setHours(0,0,0,0);
@@ -368,6 +366,15 @@
                 } catch (err) { alert("Invalid File"); }
             };
             reader.readAsText(file);
+        }
+
+        // --- Service Worker Registration ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker: Registered'))
+                    .catch(err => console.log('Service Worker: Error: ' + err));
+            });
         }
     </script>
 </body>
