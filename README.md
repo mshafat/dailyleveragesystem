@@ -78,7 +78,7 @@ This method and app are **completely free and open source**.
 
 ## Connect
 
-📧 Email: munadilshafat@gmail.com  
+📧 Email: munadilshafat[at]gmail.com  
 🌍 Country: Bangladesh
 
 ---
