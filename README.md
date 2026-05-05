@@ -90,3 +90,47 @@ MIT — Use freely. Share widely. Give credit.
 ---
 
 *"By embracing your limits, you finally find the leverage to move your world."*
+
+---
+
+## JSON Data Structure
+```
+{
+  "goal": "The primary objective or 'Vision 0' text",
+  "weekStart": "0", 
+  "notes": {
+    "YYYY-MM-DD": {
+      "t1": "Text for the MUST task",
+      "c1": true,
+      "t2a": "Text for the first NEXT task",
+      "c2a": false,
+      "t2b": "Text for the second NEXT task",
+      "c2b": false,
+      "t4": "Text for the BEST task",
+      "c4": false,
+      "bd": "Detailed content of the Brain Dump section"
+    }
+  }
+}
+
+```
+
+### Field Definitions:
+goal (String): Stores the user's "North Star" or Vision 0.
+
+weekStart (String): Represents the starting day of the week (e.g., "0" for Sunday, "1" for Monday, up to "6" for Saturday).
+
+notes (Object): A collection of daily entries where each key is a date in YYYY-MM-DD format.
+
+t1, t2a, t2b, t4 (String): The content/text for the specific tasks based on the Leverage Equation.
+
+c1, c2a, c2b, c4 (Boolean): The completion status (true for checked, false for unchecked).
+
+bd (String): The raw text for notes or scattered thoughts from the "Brain Dump" flip side.
+
+### Technical Implementation Notes:
+Storage Mechanism: The data is stored in the browser's localStorage using the keys levNotes, levGoal, and levWeekStart.
+
+Data Pruning: The autoSave() function automatically deletes a date key from the notes object if all its fields (t1, t2a, t2b, t4, bd) are empty, ensuring the file size remains optimized.
+
+Backward Compatibility: This structure is consistent across the 3.6.x series, allowing for seamless imports and exports between versions.
