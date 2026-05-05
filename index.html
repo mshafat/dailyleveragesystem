@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Leverage System V3.6.0</title>
+    <title>Daily Leverage System V3.6.2</title>
     
     <link rel="icon" type="image/png" href="logoforapp.png">
     <link rel="apple-touch-icon" href="logoforapp.png">
@@ -43,7 +43,6 @@
         .h-back { transform: rotateY(180deg); background: #fffde7; }
         .flipped .history-card-inner { transform: rotateY(180deg); }
         .h-entry { margin-bottom: 4px; border-bottom: 1px solid rgba(0,0,0,0.03); line-height: 1.3; word-wrap: break-word; }
-        .h-entry.best { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; max-height: 2.6em; overflow: hidden; text-overflow: ellipsis; }
 
         .section { margin-bottom: 12px; }
         .gold { color: #b8860b; font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; }
@@ -65,6 +64,10 @@
         .equation-box { background: #f9f9f9; padding: 15px; border-left: 4px solid #b8860b; margin: 20px 0; }
         .about-list { list-style: none; padding: 0; font-size: 14px; }
         .about-list li { margin-bottom: 10px; line-height: 1.5; }
+        
+        .disclaimer-box { margin-top: 30px; padding: 15px; border-top: 1px solid #eee; background: #fafafa; border-radius: 10px; }
+        .disclaimer-title { font-weight: bold; color: #e74c3c; font-size: 13px; margin-bottom: 5px; display: block; }
+        .disclaimer-text { font-size: 12px; color: #666; line-height: 1.5; font-style: italic; }
     </style>
 </head>
 <body>
@@ -130,17 +133,29 @@
                 <h2 style="margin-top:0;">Daily Leverage System</h2>
                 <span style="font-style: italic; color: #2ecc71; font-weight: bold; margin-bottom: 20px; display: block;">Master Your Day. Achieve Your Vision.</span>
                 <p>The Daily Leverage System is a high-performance application designed to help you master your focus through <b>The Daily Leverage Method</b>. Created by Bangladeshi productivity enthusiast <b>Munadil Shafat</b>, this framework is one of the world’s simplest and most effective systems for goal achievement.</p>
+
                 <div class="equation-box">
                     <h3 style="margin-top:0;">The Science of the Equation: 0 + 1 + 2 = 4</h3>
                     <p style="font-family: 'Courier New', monospace; font-weight: bold; margin-bottom: 0;">[Vision: 0] + [Lead: 1] + [Flow: 2] = [Victory: 4]</p>
                 </div>
+
                 <ul class="about-list">
                     <li><b>0 (GOAL):</b> Your <b>North Star</b>. Every action must serve your ultimate purpose.</li>
                     <li><b>1 (MUST):</b> Your <b>Lead Action</b>. The single most important move that defines your progress today.</li>
                     <li><b>2 (NEXT):</b> Two <b>Flow Actions</b>. Supporting moves that maintain your momentum.</li>
                     <li><b>= 4 (BEST):</b> The <b>Victory</b>. One more act that transforms a productive day into your Best day.</li>
                 </ul>
-                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.6.0 (Refined History)</div>
+
+                <p>This <b>"One More"</b> is your Leverage. It fuels a chain reaction that transforms vision into reality. Small daily wins lead to massive lifelong breakthroughs.</p>
+                
+                <div class="disclaimer-box">
+                    <span class="disclaimer-title">DISCLAIMER</span>
+                    <div class="disclaimer-text">
+                        This is a completely free and open-source application designed to gain leverage through daily focus. This app is not a replacement for traditional To-Do lists or Note-taking apps; rather, it is built to work alongside them. All your data is saved strictly in your local browser and is never stored on any server. Users are strongly advised to regularly export and back up their data at their own responsibility.
+                    </div>
+                </div>
+
+                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.6.2 (Enhanced Core)</div>
             </div>
         </div>
 
@@ -186,82 +201,91 @@
             return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
         }
 
+        function hasAnyData(id) {
+            const allNotes = JSON.parse(localStorage.getItem('levNotes') || "{}");
+            const n = allNotes[id];
+            return (n && (n.t1?.trim() || n.t2a?.trim() || n.t2b?.trim() || n.t4?.trim() || n.bd?.trim()));
+        }
+
+        function getPreviousDateWithData(startDate) {
+            const allNotes = JSON.parse(localStorage.getItem('levNotes') || "{}");
+            const sortedDates = Object.keys(allNotes).filter(id => hasAnyData(id)).sort((a,b) => new Date(b) - new Date(a));
+            return sortedDates.find(dateStr => new Date(dateStr) < startDate);
+        }
+
         function refreshUI() {
             const navMain = document.getElementById('nav-main-text');
             const navSub = document.getElementById('nav-sub-text');
+            const prevBtn = document.getElementById('nav-prev');
             const nextBtn = document.getElementById('nav-next');
             navMain.classList.remove('is-current');
             navSub.classList.remove('is-current');
+            prevBtn.classList.remove('disabled');
+            nextBtn.classList.remove('disabled');
 
             if (activeTab === 'today') {
                 navMain.innerText = currentDay.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
                 navSub.innerText = `Week ${getWeekNumber(currentDay)}, ${currentDay.getFullYear()}`;
                 if(currentDay.getTime() === REAL_TODAY.getTime()) navMain.classList.add('is-current');
-                currentDay >= TOMORROW ? nextBtn.classList.add('disabled') : nextBtn.classList.remove('disabled');
+                currentDay >= TOMORROW ? nextBtn.classList.add('disabled') : null;
+                if (!getPreviousDateWithData(currentDay)) prevBtn.classList.add('disabled');
                 loadNoteData();
                 checkLockStatus();
             } else if (activeTab === 'history') {
                 navMain.innerText = 'HISTORY';
                 navSub.innerText = `Week ${getWeekNumber(viewingWeekStart)}, ${viewingWeekStart.getFullYear()}`;
-                nextBtn.classList.remove('disabled');
+                const allNotes = JSON.parse(localStorage.getItem('levNotes') || "{}");
+                const oldestNoteDate = Object.keys(allNotes).sort()[0];
+                if (!oldestNoteDate || viewingWeekStart <= getWeekStart(new Date(oldestNoteDate))) prevBtn.classList.add('disabled');
                 const actualWeekStart = getWeekStart(REAL_TODAY);
                 if(viewingWeekStart.getTime() === actualWeekStart.getTime()) { navMain.classList.add('is-current'); navSub.classList.add('is-current'); }
                 renderHistory();
             } else {
                 navMain.innerText = activeTab.toUpperCase();
                 navSub.innerText = (activeTab === 'settings') ? "Control Center" : "System Information";
+                prevBtn.classList.add('disabled');
                 nextBtn.classList.add('disabled');
             }
             document.getElementById('display-goal').innerText = localStorage.getItem('levGoal') || "Set Goal";
-        }
-
-        function createCard(id, data) {
-            const d = new Date(id);
-            return `
-                <div class="history-card-container" id="hist-${id}">
-                    <div class="history-card-inner">
-                        <div class="h-front">
-                            <div style="font-weight:bold; cursor:pointer; margin-bottom:8px; font-size:12px;" onclick="goToDate('${id}')">${d.toLocaleDateString('en-US', {weekday:'short', day:'numeric'})} 🔗</div>
-                            <div class="h-entry"><b>(1)</b> ${data.t1 || ''}</div>
-                            <div class="h-entry"><b>{2}</b> ${data.t2a || ''}</div>
-                            <div class="h-entry"><b>{2}</b> ${data.t2b || ''}</div>
-                            <div class="h-entry best"><b>[4]</b> ${data.t4 || ''}</div>
-                            <button class="flip-btn" onclick="flip('hist-${id}')">FLIP</button>
-                        </div>
-                        <div class="h-back">
-                            <p style="font-size:10px; line-height:1.4;">${data.bd || 'Empty Brain Dump'}</p>
-                            <button class="flip-btn" onclick="flip('hist-${id}')">BACK</button>
-                        </div>
-                    </div>
-                </div>`;
         }
 
         function renderHistory() {
             const grid = document.getElementById('history-grid'); grid.innerHTML = "";
             const query = document.getElementById('hist-search').value.toLowerCase().trim();
             const allNotes = JSON.parse(localStorage.getItem('levNotes') || "{}");
-            
-            // Filtering empty entries (Blank Note Removal)
-            const validNotes = Object.keys(allNotes).filter(id => {
-                const n = allNotes[id];
-                return (n.t1?.trim() || n.t2a?.trim() || n.t2b?.trim() || n.t4?.trim() || n.bd?.trim());
-            });
-
+            const validNotes = Object.keys(allNotes).filter(id => hasAnyData(id));
             if (query) {
-                // Global Search across all valid notes
                 validNotes.sort((a,b) => new Date(b) - new Date(a)).forEach(id => {
                     const data = allNotes[id];
-                    const content = (id + JSON.stringify(data)).toLowerCase();
-                    if (content.includes(query)) grid.innerHTML += createCard(id, data);
+                    if ((id + JSON.stringify(data)).toLowerCase().includes(query)) grid.innerHTML += createCard(id, data);
                 });
             } else {
-                // Default Weekly View
                 for (let i = 6; i >= 0; i--) {
                     let d = new Date(viewingWeekStart); d.setDate(d.getDate() + i);
                     let id = getSafeId(d);
                     if (validNotes.includes(id)) grid.innerHTML += createCard(id, allNotes[id]);
                 }
             }
+        }
+
+        function createCard(id, data) {
+            const d = new Date(id);
+            return `<div class="history-card-container" id="hist-${id}"><div class="history-card-inner"><div class="h-front"><div style="font-weight:bold; cursor:pointer; margin-bottom:8px; font-size:12px;" onclick="goToDate('${id}')">${d.toLocaleDateString('en-US', {weekday:'short', day:'numeric'})} 🔗</div><div class="h-entry"><b>(1)</b> ${data.t1 || ''}</div><div class="h-entry"><b>{2}</b> ${data.t2a || ''}</div><div class="h-entry"><b>{2}</b> ${data.t2b || ''}</div><div class="h-entry" style="display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;max-height:2.6em;overflow:hidden;text-overflow:ellipsis;"><b>[4]</b> ${data.t4 || ''}</div><button class="flip-btn" onclick="flip('hist-${id}')">FLIP</button></div><div class="h-back"><p style="font-size:10px; line-height:1.4;">${data.bd || 'Empty'}</p><button class="flip-btn" onclick="flip('hist-${id}')">BACK</button></div></div></div>`;
+        }
+
+        function changeScope(gap) {
+            if (activeTab === 'today') {
+                if (gap === -1) {
+                    const prevDate = getPreviousDateWithData(currentDay);
+                    if (prevDate) currentDay = new Date(prevDate);
+                } else {
+                    let target = new Date(currentDay); target.setDate(target.getDate() + 1);
+                    if (target <= TOMORROW) currentDay = target;
+                }
+            } else if (activeTab === 'history') {
+                viewingWeekStart.setDate(viewingWeekStart.getDate() + (gap * 7));
+            }
+            refreshUI();
         }
 
         function switchTab(tab) {
@@ -273,25 +297,13 @@
             refreshUI();
         }
 
-        function changeScope(gap) {
-            if (activeTab === 'today') {
-                let target = new Date(currentDay); target.setDate(target.getDate() + gap);
-                if (gap > 0 && target > TOMORROW) return; 
-                currentDay = target;
-            } else { viewingWeekStart.setDate(viewingWeekStart.getDate() + (gap * 7)); }
-            refreshUI();
-        }
-
         function resetToCurrent() { currentDay = new Date(REAL_TODAY); viewingWeekStart = getWeekStart(REAL_TODAY); refreshUI(); }
         function goToDate(id) { currentDay = new Date(id); viewingWeekStart = getWeekStart(currentDay); switchTab('today'); }
-
         function checkLockStatus() {
-            const yesterday = new Date(REAL_TODAY); yesterday.setDate(yesterday.getDate() - 1);
-            const isLocked = currentDay < yesterday;
+            const isLocked = currentDay < new Date(REAL_TODAY.getTime() - 86400000);
             ['task-1', 'task-2a', 'task-2b', 'task-4', 'brain-dump', 'check-1', 'check-2a', 'check-2b', 'check-4'].forEach(f => document.getElementById(f).disabled = isLocked);
             document.getElementById('lock-msg').style.display = isLocked ? "block" : "none";
         }
-
         function loadNoteData() {
             const id = getSafeId(currentDay);
             const data = JSON.parse(localStorage.getItem('levNotes') || "{}")[id] || {};
@@ -307,25 +319,15 @@
             ['task-1', 'task-2a', 'task-2b', 'task-4'].forEach(f => expand(document.getElementById(f)));
             runLogic(false);
         }
-
         function autoSave() {
             if (document.getElementById('task-1').disabled) return;
             const id = getSafeId(currentDay);
             const allNotes = JSON.parse(localStorage.getItem('levNotes') || "{}");
-            const t1 = document.getElementById('task-1').value.trim();
-            const t2a = document.getElementById('task-2a').value.trim();
-            const t2b = document.getElementById('task-2b').value.trim();
-            const t4 = document.getElementById('task-4').value.trim();
-            const bd = document.getElementById('brain-dump').value.trim();
-
-            if (!t1 && !t2a && !t2b && !t4 && !bd) {
-                delete allNotes[id]; // Blank Note Removal Logic
-            } else {
-                allNotes[id] = { t1, c1: document.getElementById('check-1').checked, t2a, c2a: document.getElementById('check-2a').checked, t2b, c2b: document.getElementById('check-2b').checked, t4, c4: document.getElementById('check-4').checked, bd };
-            }
+            const t1 = document.getElementById('task-1').value.trim(), t2a = document.getElementById('task-2a').value.trim(), t2b = document.getElementById('task-2b').value.trim(), t4 = document.getElementById('task-4').value.trim(), bd = document.getElementById('brain-dump').value.trim();
+            if (!t1 && !t2a && !t2b && !t4 && !bd) { delete allNotes[id]; } 
+            else { allNotes[id] = { t1, c1: document.getElementById('check-1').checked, t2a, c2a: document.getElementById('check-2a').checked, t2b, c2b: document.getElementById('check-2b').checked, t4, c4: document.getElementById('check-4').checked, bd }; }
             localStorage.setItem('levNotes', JSON.stringify(allNotes));
         }
-
         function runLogic(save = true) {
             const c1 = document.getElementById('check-1').checked;
             document.getElementById('sec-2').style.opacity = c1 ? "1" : "0.3";
@@ -335,48 +337,33 @@
             document.getElementById('sec-4').style.pointerEvents = (c1 && c2) ? "auto" : "none";
             if(save) autoSave();
         }
-
         function expand(el) { el.style.height = 'auto'; el.style.height = (el.scrollHeight) + 'px'; }
         function flip(id) { document.getElementById(id).classList.toggle('flipped'); }
-        function checkBackupReminder() {
-            const lastBackup = localStorage.getItem('levLastBackup');
-            if (!lastBackup || (REAL_TODAY - new Date(lastBackup)) / 86400000 >= 7) document.getElementById('backup-reminder').style.display = 'block';
-        }
         function saveSettings() { 
             localStorage.setItem('levGoal', document.getElementById('goal-input').value); 
             localStorage.setItem('levWeekStart', document.getElementById('week-start-select').value);
-            viewingWeekStart = getWeekStart(REAL_TODAY);
             alert("Settings Saved!"); refreshUI(); 
+        }
+        function checkBackupReminder() {
+            const last = localStorage.getItem('levLastBackup');
+            if (!last || (REAL_TODAY - new Date(last)) / 86400000 >= 7) document.getElementById('backup-reminder').style.display = 'block';
         }
         function exportJSON() {
             const data = { notes: JSON.parse(localStorage.getItem('levNotes')), goal: localStorage.getItem('levGoal'), weekStart: localStorage.getItem('levWeekStart') };
             const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); 
-            a.download = `leverage_backup_${getSafeId(REAL_TODAY)}.json`; a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `leverage_${getSafeId(REAL_TODAY)}.json`; a.click();
             localStorage.setItem('levLastBackup', REAL_TODAY.toISOString());
             document.getElementById('backup-reminder').style.display = 'none';
         }
-        function importJSON(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if(data.notes) localStorage.setItem('levNotes', JSON.stringify(data.notes));
-                    if(data.goal) localStorage.setItem('levGoal', data.goal);
-                    if(data.weekStart !== undefined) localStorage.setItem('levWeekStart', data.weekStart);
-                    alert("Backup Imported!"); location.reload();
-                } catch (err) { alert("Invalid File"); }
-            };
-            reader.readAsText(file);
+        function importJSON(e) {
+            const file = e.target.files[0]; if (!file) return;
+            const r = new FileReader(); r.onload = (ev) => {
+                const d = JSON.parse(ev.target.result);
+                if(d.notes) localStorage.setItem('levNotes', JSON.stringify(d.notes));
+                location.reload();
+            }; r.readAsText(file);
         }
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').then(() => console.log('SW Registered'));
-            });
-        }
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
     </script>
 </body>
 </html>
