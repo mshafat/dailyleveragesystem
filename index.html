@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Leverage System V3.6.2</title>
+    <title>Daily Leverage System V3.6.3</title>
     
     <link rel="icon" type="image/png" href="logoforapp.png">
     <link rel="apple-touch-icon" href="logoforapp.png">
@@ -155,7 +155,7 @@
                     </div>
                 </div>
 
-                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.6.2 (Enhanced Core)</div>
+                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.6.3 (Bug Fix: Data Sync)</div>
             </div>
         </div>
 
@@ -178,6 +178,9 @@
         window.onload = () => { 
             const savedStart = localStorage.getItem('levWeekStart');
             if(savedStart !== null) document.getElementById('week-start-select').value = savedStart;
+            const savedGoal = localStorage.getItem('levGoal');
+            if(savedGoal !== null) document.getElementById('goal-input').value = savedGoal;
+            
             viewingWeekStart = getWeekStart(new Date());
             checkBackupReminder();
             refreshUI(); 
@@ -348,21 +351,37 @@
             const last = localStorage.getItem('levLastBackup');
             if (!last || (REAL_TODAY - new Date(last)) / 86400000 >= 7) document.getElementById('backup-reminder').style.display = 'block';
         }
+        
+        // Fixed Export Function
         function exportJSON() {
-            const data = { notes: JSON.parse(localStorage.getItem('levNotes')), goal: localStorage.getItem('levGoal'), weekStart: localStorage.getItem('levWeekStart') };
+            const data = { 
+                notes: JSON.parse(localStorage.getItem('levNotes') || "{}"), 
+                goal: localStorage.getItem('levGoal') || "", 
+                weekStart: localStorage.getItem('levWeekStart') || "0" 
+            };
             const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `leverage_${getSafeId(REAL_TODAY)}.json`; a.click();
             localStorage.setItem('levLastBackup', REAL_TODAY.toISOString());
             document.getElementById('backup-reminder').style.display = 'none';
         }
+
+        // Fixed Import Function
         function importJSON(e) {
             const file = e.target.files[0]; if (!file) return;
             const r = new FileReader(); r.onload = (ev) => {
-                const d = JSON.parse(ev.target.result);
-                if(d.notes) localStorage.setItem('levNotes', JSON.stringify(d.notes));
-                location.reload();
+                try {
+                    const d = JSON.parse(ev.target.result);
+                    if(d.notes) localStorage.setItem('levNotes', JSON.stringify(d.notes));
+                    if(d.goal !== undefined) localStorage.setItem('levGoal', d.goal);
+                    if(d.weekStart !== undefined) localStorage.setItem('levWeekStart', d.weekStart);
+                    alert("Backup imported successfully!");
+                    location.reload();
+                } catch(err) {
+                    alert("Invalid backup file.");
+                }
             }; r.readAsText(file);
         }
+        
         if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
     </script>
 </body>
