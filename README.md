@@ -116,13 +116,15 @@ MIT — Use freely. Share widely. Give credit.
 ```
 
 ### Field Definitions:
-Field,Type,Description
-goal,String,Global vision/goal stored in levGoal.
-weekStart,String,Day index (0-6) stored in levWeekStart.
-notes,Object,Map of dates containing task objects.
-t[x],String,The task description/text.
-c[x],Boolean,Checkbox status (Completed = true).
-bd,String,Multi-line text from the 'Brain Dump' (flip side).
+| Field     | Type    | Description                                        |
+|-----------|---------|----------------------------------------------------|
+| goal      | String  | Global vision/goal stored in levGoal.              |
+| weekStart | String  | Day index (0-6) stored in levWeekStart.            |
+| notes     | Object  | Map of dates containing task objects.              |
+| t[x]      | String  | The task description/text.                         |
+| c[x]      | Boolean | Checkbox status (Completed = true).                |
+| bd        | String  | Multi-line text from the 'Brain Dump' (flip side). |
+
 
 ### Technical Implementation Notes:
 Storage Mechanism: The data is stored in the browser's localStorage using the keys levNotes, levGoal, and levWeekStart.
