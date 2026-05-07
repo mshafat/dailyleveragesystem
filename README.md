@@ -132,3 +132,6 @@ Storage Mechanism: The data is stored in the browser's localStorage using the ke
 Data Pruning: The autoSave() function automatically deletes a date key from the notes object if all its fields (t1, t2a, t2b, t4, bd) are empty, ensuring the file size remains optimized.
 
 Backward Compatibility: This structure is consistent across the 3.6.x series, allowing for seamless imports and exports between versions.
+
+## ⚖️ Disclaimer
+This is a completely free and open-source application. It is designed to work alongside your existing tools, not necessarily replace them. Since all data is stored in Local Storage, users are strictly advised to manually Export Backup regularly to prevent data loss.
