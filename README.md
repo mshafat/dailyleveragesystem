@@ -116,17 +116,13 @@ MIT — Use freely. Share widely. Give credit.
 ```
 
 ### Field Definitions:
-goal (String): Stores the user's "North Star" or Vision 0.
-
-weekStart (String): Represents the starting day of the week (e.g., "0" for Sunday, "1" for Monday, up to "6" for Saturday).
-
-notes (Object): A collection of daily entries where each key is a date in YYYY-MM-DD format.
-
-t1, t2a, t2b, t4 (String): The content/text for the specific tasks based on the Leverage Equation.
-
-c1, c2a, c2b, c4 (Boolean): The completion status (true for checked, false for unchecked).
-
-bd (String): The raw text for notes or scattered thoughts from the "Brain Dump" flip side.
+Field,Type,Description
+goal,String,Global vision/goal stored in levGoal.
+weekStart,String,Day index (0-6) stored in levWeekStart.
+notes,Object,Map of dates containing task objects.
+t[x],String,The task description/text.
+c[x],Boolean,Checkbox status (Completed = true).
+bd,String,Multi-line text from the 'Brain Dump' (flip side).
 
 ### Technical Implementation Notes:
 Storage Mechanism: The data is stored in the browser's localStorage using the keys levNotes, levGoal, and levWeekStart.
