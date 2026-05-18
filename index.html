@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Leverage System V3.6.3</title>
+    <title>Daily Leverage System V3.7.1</title>
     
     <link rel="icon" type="image/png" href="logoforapp.png">
     <link rel="apple-touch-icon" href="logoforapp.png">
@@ -15,7 +15,17 @@
     <meta name="theme-color" content="#2ecc71">
 
     <style>
-        :root { --bg-color: #eef2f3; --note-color: #fff9c4; --accent-color: #333; --highlight-color: #2ecc71; }
+        :root { 
+            --bg-color: #eef2f3; 
+            --note-color: #fff9c4; 
+            --accent-color: #333; 
+            --highlight-color: #2ecc71; 
+            /* Pyramid Colors optimized for light theme */
+            --color-vision: #2f3640; 
+            --color-milestone: #7f8c8d; 
+            --color-focus: #2ecc71; 
+            --color-quarter: #f1c40f;
+        }
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; padding-bottom: 80px; }
         .main-content { width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center; padding: 15px; flex-grow: 1; }
@@ -52,6 +62,7 @@
         
         .flip-btn { position: absolute; bottom: 12px; right: 12px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 9px; padding: 4px 8px; z-index: 10; }
 
+        /* FOOTER NAV TEXT SIZE FICTION - RESTORED TO ORIGINAL 11PX */
         .footer-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; padding: 12px 25px; background: white; border-radius: 50px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); z-index: 1000; }
         .footer-link { text-decoration: none; color: #777; font-size: 11px; font-weight: bold; cursor: pointer; letter-spacing: 1px; }
         .footer-link.active { color: #2ecc71; border-bottom: 2px solid #2ecc71; }
@@ -68,6 +79,24 @@
         .disclaimer-box { margin-top: 30px; padding: 15px; border-top: 1px solid #eee; background: #fafafa; border-radius: 10px; }
         .disclaimer-title { font-weight: bold; color: #e74c3c; font-size: 13px; margin-bottom: 5px; display: block; }
         .disclaimer-text { font-size: 12px; color: #666; line-height: 1.5; font-style: italic; }
+
+        /* --- POLISHED RE-DYNAMIC PYRAMID BOARD STYLES --- */
+        .pyramid { display: flex; flex-direction: column; align-items: center; width: 100%; background: white; border-radius: 15px; padding: 25px 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        
+        .tier-v2 { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-weight: 500; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 12px; padding: 20px 15px; border-radius: 8px; transition: all 0.3s ease; }
+        .tier-v2 h3 { font-size: 1.5rem; font-weight: 800; margin: 0 0 6px 0; opacity: 0.9; line-height: 1; }
+        .tier-v2-content { font-size: 13px; line-height: 1.5; max-width: 90%; word-wrap: break-word; font-style: italic; }
+        
+        /* Smooth Tapering Layout Widths Without Hard Clip-Paths to avoid text cutting */
+        #tier-3 { background: linear-gradient(135deg, #1e272e, var(--color-vision)); width: 100%; color: white; border-top: 4px solid #fff; }
+        
+        .tier-2-container-v2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 92%; margin-bottom: 12px; }
+        .tier-2-part-v2 { background: linear-gradient(135deg, #f5f6fa, var(--color-milestone)); padding: 18px 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08); color: white; border-radius: 8px; }
+        .tier-2-part-v2 h3 { color: white; font-size: 1.4rem; font-weight: 800; margin: 0 0 6px 0; }
+        
+        #tier-1 { background: linear-gradient(135deg, #1b8a5a, var(--color-focus)); width: 80%; color: white; }
+        #tier-0 { background: linear-gradient(135deg, #e67e22, var(--color-quarter)); width: 65%; color: #2c3e50; margin-bottom: 0; }
+        #tier-0 h3 { color: #2c3e50; }
     </style>
 </head>
 <body>
@@ -115,15 +144,49 @@
             <div id="history-grid" class="history-grid"></div>
         </div>
 
+        <div id="vision-view" class="view-panel">
+            <div class="pyramid">
+                <div class="tier-v2" id="tier-3">
+                    <h3>3</h3>
+                    <div class="tier-v2-content" id="view-3">Set 3-Year Vision Statement</div>
+                </div>
+                <div class="tier-2-container-v2">
+                    <div class="tier-2-part-v2" id="part-2a">
+                        <h3>2</h3>
+                        <div class="tier-v2-content" id="view-2a">Set Milestone A</div>
+                    </div>
+                    <div class="tier-2-part-v2" id="part-2b">
+                        <h3>2</h3>
+                        <div class="tier-v2-content" id="view-2b">Set Milestone B</div>
+                    </div>
+                </div>
+                <div class="tier-v2" id="tier-1">
+                    <h3>1</h3>
+                    <div class="tier-v2-content" id="view-1">Set Annual Focus</div>
+                </div>
+                <div class="tier-v2" id="tier-0">
+                    <h3>0</h3>
+                    <div class="tier-v2-content" id="view-0">Set Quarterly Objective</div>
+                </div>
+            </div>
+        </div>
+
         <div id="settings-view" class="view-panel">
             <div class="content-card">
                 <h3>Settings</h3>
-                <div style="margin-bottom:15px;"><label style="font-size:11px;">VISION 0</label><input type="text" id="goal-input" style="width:100%; padding:8px; border:1px solid #ddd;"></div>
+                <div style="margin-bottom:12px;"><label style="font-size:11px; color:var(--color-quarter); font-weight:bold;">VISION 0 (Quarter Goal)</label><input type="text" id="goal-input" style="width:100%; padding:8px; border:1px solid #ddd;"></div>
+                <div style="margin-bottom:12px;"><label style="font-size:11px; color:#1b8a5a; font-weight:bold;">VISION 1 (1 Year Focus)</label><input type="text" id="goal-1-input" style="width:100%; padding:8px; border:1px solid #ddd;"></div>
+                <div style="margin-bottom:12px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <div><label style="font-size:11px; color:#57606f; font-weight:bold;">Milestone A (Year 2)</label><input type="text" id="goal-2a-input" style="width:100%; padding:8px; border:1px solid #ddd;"></div>
+                    <div><label style="font-size:11px; color:#57606f; font-weight:bold;">Milestone B (Year 2)</label><input type="text" id="goal-2b-input" style="width:100%; padding:8px; border:1px solid #ddd;"></div>
+                </div>
+                <div style="margin-bottom:12px;"><label style="font-size:11px; color:#1e272e; font-weight:bold;">VISION 3 (3 Year Vision)</label><input type="text" id="goal-3-input" style="width:100%; padding:8px; border:1px solid #ddd;"></div>
                 <div style="margin-bottom:15px;"><label style="font-size:11px;">WEEK STARTS</label><select id="week-start-select" style="width:100%; padding:8px; border:1px solid #ddd;"><option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
-                <button onclick="saveSettings()" style="width:100%; padding:10px; background:#2ecc71; color:white; border:none; cursor:pointer; font-weight:bold;">Apply Changes</button>
+                
+                <button onclick="saveSettings()" style="width:100%; padding:10px; background:#2ecc71; color:white; border:none; cursor:pointer; font-weight:bold; border-radius:5px;">Apply Changes</button>
                 <hr style="margin:20px 0;">
-                <button onclick="exportJSON()" style="width:100%; padding:8px; background:#3498db; color:white; border:none; margin-bottom:5px; cursor:pointer;">Export Backup</button>
-                <button onclick="document.getElementById('fileIn').click()" style="width:100%; padding:8px; background:#e67e22; color:white; border:none; cursor:pointer;">Import Backup</button>
+                <button onclick="exportJSON()" style="width:100%; padding:8px; background:#3498db; color:white; border:none; margin-bottom:5px; cursor:pointer; border-radius:5px;">Export Backup</button>
+                <button onclick="document.getElementById('fileIn').click()" style="width:100%; padding:8px; background:#e67e22; color:white; border:none; cursor:pointer; border-radius:5px;">Import Backup</button>
                 <input type="file" id="fileIn" style="display:none" onchange="importJSON(event)">
             </div>
         </div>
@@ -155,13 +218,14 @@
                     </div>
                 </div>
 
-                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.6.3 (Bug Fix: Data Sync)</div>
+                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.7.1 (Vision Layout Patch)</div>
             </div>
         </div>
 
         <div class="footer-nav">
             <div id="btn-today" class="footer-link active" onclick="switchTab('today')">TODAY</div>
             <div id="btn-history" class="footer-link" onclick="switchTab('history')">HISTORY</div>
+            <div id="btn-vision" class="footer-link" onclick="switchTab('vision')">VISION</div>
             <div id="btn-settings" class="footer-link" onclick="switchTab('settings')">SETTINGS</div>
             <div id="btn-about" class="footer-link" onclick="switchTab('about')">ABOUT</div>
         </div>
@@ -178,11 +242,17 @@
         window.onload = () => { 
             const savedStart = localStorage.getItem('levWeekStart');
             if(savedStart !== null) document.getElementById('week-start-select').value = savedStart;
-            const savedGoal = localStorage.getItem('levGoal');
-            if(savedGoal !== null) document.getElementById('goal-input').value = savedGoal;
+            
+            // Sync setting fields on load
+            document.getElementById('goal-input').value = localStorage.getItem('levGoal') || "";
+            document.getElementById('goal-1-input').value = localStorage.getItem('levGoal1') || "";
+            document.getElementById('goal-2a-input').value = localStorage.getItem('levGoal2a') || "";
+            document.getElementById('goal-2b-input').value = localStorage.getItem('levGoal2b') || "";
+            document.getElementById('goal-3-input').value = localStorage.getItem('levGoal3') || "";
             
             viewingWeekStart = getWeekStart(new Date());
             checkBackupReminder();
+            updateVisionBoardDisplay();
             refreshUI(); 
         };
 
@@ -243,6 +313,11 @@
                 const actualWeekStart = getWeekStart(REAL_TODAY);
                 if(viewingWeekStart.getTime() === actualWeekStart.getTime()) { navMain.classList.add('is-current'); navSub.classList.add('is-current'); }
                 renderHistory();
+            } else if (activeTab === 'vision') {
+                navMain.innerText = '3-2-1=0 VISION';
+                navSub.innerText = 'Upside-Down Framework';
+                prevBtn.classList.add('disabled');
+                nextBtn.classList.add('disabled');
             } else {
                 navMain.innerText = activeTab.toUpperCase();
                 navSub.innerText = (activeTab === 'settings') ? "Control Center" : "System Information";
@@ -250,6 +325,14 @@
                 nextBtn.classList.add('disabled');
             }
             document.getElementById('display-goal').innerText = localStorage.getItem('levGoal') || "Set Goal";
+        }
+
+        function updateVisionBoardDisplay() {
+            document.getElementById('view-3').innerText = localStorage.getItem('levGoal3') || "Set 3-Year Vision Statement";
+            document.getElementById('view-2a').innerText = localStorage.getItem('levGoal2a') || "Set Milestone A";
+            document.getElementById('view-2b').innerText = localStorage.getItem('levGoal2b') || "Set Milestone B";
+            document.getElementById('view-1').innerText = localStorage.getItem('levGoal1') || "Set Annual Focus";
+            document.getElementById('view-0').innerText = localStorage.getItem('levGoal') || "Set Quarterly Objective";
         }
 
         function renderHistory() {
@@ -342,21 +425,32 @@
         }
         function expand(el) { el.style.height = 'auto'; el.style.height = (el.scrollHeight) + 'px'; }
         function flip(id) { document.getElementById(id).classList.toggle('flipped'); }
+        
         function saveSettings() { 
             localStorage.setItem('levGoal', document.getElementById('goal-input').value); 
+            localStorage.setItem('levGoal1', document.getElementById('goal-1-input').value); 
+            localStorage.setItem('levGoal2a', document.getElementById('goal-2a-input').value); 
+            localStorage.setItem('levGoal2b', document.getElementById('goal-2b-input').value); 
+            localStorage.setItem('levGoal3', document.getElementById('goal-3-input').value); 
             localStorage.setItem('levWeekStart', document.getElementById('week-start-select').value);
-            alert("Settings Saved!"); refreshUI(); 
+            alert("Settings Saved!"); 
+            updateVisionBoardDisplay();
+            refreshUI(); 
         }
+        
         function checkBackupReminder() {
             const last = localStorage.getItem('levLastBackup');
             if (!last || (REAL_TODAY - new Date(last)) / 86400000 >= 7) document.getElementById('backup-reminder').style.display = 'block';
         }
         
-        // Fixed Export Function
         function exportJSON() {
             const data = { 
                 notes: JSON.parse(localStorage.getItem('levNotes') || "{}"), 
                 goal: localStorage.getItem('levGoal') || "", 
+                goal1: localStorage.getItem('levGoal1') || "", 
+                goal2a: localStorage.getItem('levGoal2a') || "", 
+                goal2b: localStorage.getItem('levGoal2b') || "", 
+                goal3: localStorage.getItem('levGoal3') || "", 
                 weekStart: localStorage.getItem('levWeekStart') || "0" 
             };
             const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
@@ -365,7 +459,6 @@
             document.getElementById('backup-reminder').style.display = 'none';
         }
 
-        // Fixed Import Function
         function importJSON(e) {
             const file = e.target.files[0]; if (!file) return;
             const r = new FileReader(); r.onload = (ev) => {
@@ -373,6 +466,10 @@
                     const d = JSON.parse(ev.target.result);
                     if(d.notes) localStorage.setItem('levNotes', JSON.stringify(d.notes));
                     if(d.goal !== undefined) localStorage.setItem('levGoal', d.goal);
+                    if(d.goal1 !== undefined) localStorage.setItem('levGoal1', d.goal1);
+                    if(d.goal2a !== undefined) localStorage.setItem('levGoal2a', d.goal2a);
+                    if(d.goal2b !== undefined) localStorage.setItem('levGoal2b', d.goal2b);
+                    if(d.goal3 !== undefined) localStorage.setItem('levGoal3', d.goal3);
                     if(d.weekStart !== undefined) localStorage.setItem('levWeekStart', d.weekStart);
                     alert("Backup imported successfully!");
                     location.reload();
@@ -381,7 +478,6 @@
                 }
             }; r.readAsText(file);
         }
-        
         if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
     </script>
 </body>
