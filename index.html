@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Leverage System V3.7.1</title>
+    <title>Daily Leverage System V3.8.5</title>
     
     <link rel="icon" type="image/png" href="logoforapp.png">
     <link rel="apple-touch-icon" href="logoforapp.png">
@@ -20,7 +20,6 @@
             --note-color: #fff9c4; 
             --accent-color: #333; 
             --highlight-color: #2ecc71; 
-            /* Pyramid Colors optimized for light theme */
             --color-vision: #2f3640; 
             --color-milestone: #7f8c8d; 
             --color-focus: #2ecc71; 
@@ -40,29 +39,70 @@
 
         #backup-reminder { width: 100%; background: #e74c3c; color: white; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-size: 12px; text-align: center; display: none; cursor: pointer; }
 
-        .note-container { width: 100%; height: 520px; perspective: 1000px; position: relative; margin-bottom: 20px; }
+        .note-container { width: 100%; height: 530px; perspective: 1000px; position: relative; margin-bottom: 20px; }
         .note-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
         .flipped .note-inner { transform: rotateY(180deg); }
-        .note-front, .note-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: var(--note-color); box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 30px 25px; border-bottom-right-radius: 50px 5px; display: flex; flex-direction: column; }
-        .note-back { transform: rotateY(180deg); background: #fffde7; }
+        
+        .note-front, .note-back { 
+            position: absolute; 
+            width: 100%; 
+            height: 100%; 
+            backface-visibility: hidden; 
+            -webkit-backface-visibility: hidden;
+            background: var(--note-color); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            padding: 25px 25px 45px 25px; 
+            border-bottom-right-radius: 50px 5px; 
+            display: flex; 
+            flex-direction: column; 
+        }
+        .note-front { z-index: 2; transform: rotateY(0deg); }
+        .note-back { transform: rotateY(180deg); background: #fffde7; z-index: 1; }
+
+        /* CRITICAL FLIP OVERLAY FIX */
+        .flipped .note-front { pointer-events: none !important; z-index: 1; }
+        .flipped .note-back { pointer-events: auto !important; z-index: 10; }
+
+        .clipboard-bar { position: absolute; bottom: 12px; left: 12px; display: flex; gap: 6px; z-index: 20; }
+        .clip-btn { background: #333; color: #fff; border: none; border-radius: 4px; padding: 5px 9px; font-size: 9px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; opacity: 0.9; }
+        .clip-btn:hover { opacity: 1; background: #000; }
+        .clip-btn:active { transform: scale(0.95); }
+
+        .flip-btn { position: absolute; bottom: 12px; right: 12px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 9px; font-weight: bold; padding: 5px 10px; z-index: 30; user-select: none; }
+        .flip-btn:hover { background: #000; }
 
         .history-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; }
         .history-card-container { height: 260px; perspective: 1000px; position: relative; }
         .history-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
-        .h-front, .h-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; background: var(--note-color); box-shadow: 0 4px 10px rgba(0,0,0,0.05); padding: 12px; border-bottom-right-radius: 20px 3px; display: flex; flex-direction: column; font-size: 11px; overflow: hidden; }
-        .h-back { transform: rotateY(180deg); background: #fffde7; }
+        .h-front, .h-back { 
+            position: absolute; 
+            width: 100%; 
+            height: 100%; 
+            backface-visibility: hidden; 
+            -webkit-backface-visibility: hidden;
+            background: var(--note-color); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+            padding: 12px 12px 35px 12px; 
+            border-bottom-right-radius: 20px 3px; 
+            display: flex; 
+            flex-direction: column; 
+            font-size: 11px; 
+            overflow: hidden; 
+        }
+        .h-front { z-index: 2; transform: rotateY(0deg); }
+        .h-back { transform: rotateY(180deg); background: #fffde7; z-index: 1; }
         .flipped .history-card-inner { transform: rotateY(180deg); }
+        .flipped .h-front { pointer-events: none !important; z-index: 1; }
+        .flipped .h-back { pointer-events: auto !important; z-index: 10; }
+
         .h-entry { margin-bottom: 4px; border-bottom: 1px solid rgba(0,0,0,0.03); line-height: 1.3; word-wrap: break-word; }
 
-        .section { margin-bottom: 12px; }
-        .gold { color: #b8860b; font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; }
+        .section { margin-bottom: 10px; }
+        .gold { color: #b8860b; font-weight: bold; font-size: 1.05rem; margin-bottom: 10px; }
         .input-row { display: flex; align-items: flex-start; gap: 10px; margin-top: 5px; }
         textarea.edit-input { flex: 1; border: none; border-bottom: 1px dashed #bbb; background: transparent; font-size: 14px; outline: none; resize: none; overflow: hidden; min-height: 20px; line-height: 1.4; font-family: inherit; }
         .lock-notice { font-size: 10px; color: #e74c3c; font-weight: bold; margin-bottom: 5px; display: none; text-align: center; width: 100%; }
-        
-        .flip-btn { position: absolute; bottom: 12px; right: 12px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 9px; padding: 4px 8px; z-index: 10; }
 
-        /* FOOTER NAV TEXT SIZE FICTION - RESTORED TO ORIGINAL 11PX */
         .footer-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; padding: 12px 25px; background: white; border-radius: 50px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); z-index: 1000; }
         .footer-link { text-decoration: none; color: #777; font-size: 11px; font-weight: bold; cursor: pointer; letter-spacing: 1px; }
         .footer-link.active { color: #2ecc71; border-bottom: 2px solid #2ecc71; }
@@ -80,20 +120,16 @@
         .disclaimer-title { font-weight: bold; color: #e74c3c; font-size: 13px; margin-bottom: 5px; display: block; }
         .disclaimer-text { font-size: 12px; color: #666; line-height: 1.5; font-style: italic; }
 
-        /* --- POLISHED RE-DYNAMIC PYRAMID BOARD STYLES --- */
+        /* PYRAMID BOARD STYLES */
         .pyramid { display: flex; flex-direction: column; align-items: center; width: 100%; background: white; border-radius: 15px; padding: 25px 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        
         .tier-v2 { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-weight: 500; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 12px; padding: 20px 15px; border-radius: 8px; transition: all 0.3s ease; }
         .tier-v2 h3 { font-size: 1.5rem; font-weight: 800; margin: 0 0 6px 0; opacity: 0.9; line-height: 1; }
         .tier-v2-content { font-size: 13px; line-height: 1.5; max-width: 90%; word-wrap: break-word; font-style: italic; }
         
-        /* Smooth Tapering Layout Widths Without Hard Clip-Paths to avoid text cutting */
         #tier-3 { background: linear-gradient(135deg, #1e272e, var(--color-vision)); width: 100%; color: white; border-top: 4px solid #fff; }
-        
         .tier-2-container-v2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 92%; margin-bottom: 12px; }
         .tier-2-part-v2 { background: linear-gradient(135deg, #f5f6fa, var(--color-milestone)); padding: 18px 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08); color: white; border-radius: 8px; }
         .tier-2-part-v2 h3 { color: white; font-size: 1.4rem; font-weight: 800; margin: 0 0 6px 0; }
-        
         #tier-1 { background: linear-gradient(135deg, #1b8a5a, var(--color-focus)); width: 80%; color: white; }
         #tier-0 { background: linear-gradient(135deg, #e67e22, var(--color-quarter)); width: 65%; color: #2c3e50; margin-bottom: 0; }
         #tier-0 h3 { color: #2c3e50; }
@@ -112,8 +148,9 @@
             <div id="nav-next" class="nav-arrow" onclick="changeScope(1)">❯</div>
         </div>
 
+        <!-- TODAY VIEW -->
         <div id="today-view" class="view-panel active">
-            <div id="lock-msg" class="lock-notice">🔒 READ-ONLY: Past notes are locked.</div>
+            <div id="lock-msg" class="lock-notice">🔒 READ-ONLY: Notes older than yesterday are locked.</div>
             <div class="note-container" id="main-note">
                 <div class="note-inner">
                     <div class="note-front">
@@ -128,22 +165,31 @@
                         <div id="sec-4" class="section" style="opacity:0.3; pointer-events:none;"><strong>[4] BEST</strong>
                             <div class="input-row"><input type="checkbox" id="check-4" onchange="autoSave()"><textarea class="edit-input" id="task-4" oninput="expand(this); autoSave()" rows="1"></textarea></div>
                         </div>
-                        <button class="flip-btn" onclick="flip('main-note')">FLIP ↻</button>
+                        
+                        <!-- DOWN-LEFT CLIPBOARD TOOLBAR -->
+                        <div class="clipboard-bar" id="clip-bar">
+                            <button type="button" class="clip-btn" onclick="copyCurrentNote()" title="Copy MUST, NEXT, BEST & Brain Dump">📋 COPY DATA</button>
+                            <button type="button" class="clip-btn" onclick="pasteToCurrentNote()" title="Paste text from Clipboard">📥 PASTE DATA</button>
+                        </div>
+
+                        <button type="button" class="flip-btn" onclick="flip('main-note')">FLIP ↻</button>
                     </div>
                     <div class="note-back">
-                        <h3>Brain Dump</h3>
+                        <h3 style="margin-top:0;">Brain Dump</h3>
                         <textarea id="brain-dump" class="edit-input" style="flex:1; border:none;" placeholder="Dump scattered thoughts..." oninput="autoSave()"></textarea>
-                        <button class="flip-btn" onclick="flip('main-note')">BACK ↺</button>
+                        <button type="button" class="flip-btn" onclick="flip('main-note')">BACK ↺</button>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- HISTORY VIEW -->
         <div id="history-view" class="view-panel">
             <input type="text" id="hist-search" class="edit-input" style="background:white; border-radius:20px; padding:10px; margin-bottom:20px; text-align:center; max-width:300px;" placeholder="Search date or text..." oninput="renderHistory()">
             <div id="history-grid" class="history-grid"></div>
         </div>
 
+        <!-- VISION BOARD VIEW -->
         <div id="vision-view" class="view-panel">
             <div class="pyramid">
                 <div class="tier-v2" id="tier-3">
@@ -171,6 +217,7 @@
             </div>
         </div>
 
+        <!-- SETTINGS VIEW -->
         <div id="settings-view" class="view-panel">
             <div class="content-card">
                 <h3>Settings</h3>
@@ -183,14 +230,15 @@
                 <div style="margin-bottom:12px;"><label style="font-size:11px; color:#1e272e; font-weight:bold;">VISION 3 (3 Year Vision)</label><input type="text" id="goal-3-input" style="width:100%; padding:8px; border:1px solid #ddd;"></div>
                 <div style="margin-bottom:15px;"><label style="font-size:11px;">WEEK STARTS</label><select id="week-start-select" style="width:100%; padding:8px; border:1px solid #ddd;"><option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select></div>
                 
-                <button onclick="saveSettings()" style="width:100%; padding:10px; background:#2ecc71; color:white; border:none; cursor:pointer; font-weight:bold; border-radius:5px;">Apply Changes</button>
+                <button type="button" onclick="saveSettings()" style="width:100%; padding:10px; background:#2ecc71; color:white; border:none; cursor:pointer; font-weight:bold; border-radius:5px;">Apply Changes</button>
                 <hr style="margin:20px 0;">
-                <button onclick="exportJSON()" style="width:100%; padding:8px; background:#3498db; color:white; border:none; margin-bottom:5px; cursor:pointer; border-radius:5px;">Export Backup</button>
-                <button onclick="document.getElementById('fileIn').click()" style="width:100%; padding:8px; background:#e67e22; color:white; border:none; cursor:pointer; border-radius:5px;">Import Backup</button>
+                <button type="button" onclick="exportJSON()" style="width:100%; padding:8px; background:#3498db; color:white; border:none; margin-bottom:5px; cursor:pointer; border-radius:5px;">Export Backup</button>
+                <button type="button" onclick="document.getElementById('fileIn').click()" style="width:100%; padding:8px; background:#e67e22; color:white; border:none; cursor:pointer; border-radius:5px;">Import Backup</button>
                 <input type="file" id="fileIn" style="display:none" onchange="importJSON(event)">
             </div>
         </div>
 
+        <!-- ABOUT VIEW -->
         <div id="about-view" class="view-panel">
             <div class="content-card about-text">
                 <h2 style="margin-top:0;">Daily Leverage System</h2>
@@ -218,10 +266,11 @@
                     </div>
                 </div>
 
-                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.7.1 (Vision Layout Patch)</div>
+                <div style="font-size:11px; color:#999; text-align:center; margin-top:20px;">Version 3.8.5 (Fix: Flip Layering & Click Interception)</div>
             </div>
         </div>
 
+        <!-- FOOTER NAVIGATION -->
         <div class="footer-nav">
             <div id="btn-today" class="footer-link active" onclick="switchTab('today')">TODAY</div>
             <div id="btn-history" class="footer-link" onclick="switchTab('history')">HISTORY</div>
@@ -235,7 +284,10 @@
         function getSafeId(date) { return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0'); }
         let currentDay = new Date(); currentDay.setHours(0,0,0,0);
         const REAL_TODAY = new Date(); REAL_TODAY.setHours(0,0,0,0);
+        
+        const YESTERDAY = new Date(REAL_TODAY); YESTERDAY.setDate(REAL_TODAY.getDate() - 1);
         const TOMORROW = new Date(REAL_TODAY); TOMORROW.setDate(REAL_TODAY.getDate() + 1);
+
         let activeTab = 'today';
         let viewingWeekStart = null;
 
@@ -243,7 +295,6 @@
             const savedStart = localStorage.getItem('levWeekStart');
             if(savedStart !== null) document.getElementById('week-start-select').value = savedStart;
             
-            // Sync setting fields on load
             document.getElementById('goal-input').value = localStorage.getItem('levGoal') || "";
             document.getElementById('goal-1-input').value = localStorage.getItem('levGoal1') || "";
             document.getElementById('goal-2a-input').value = localStorage.getItem('levGoal2a') || "";
@@ -280,10 +331,32 @@
             return (n && (n.t1?.trim() || n.t2a?.trim() || n.t2b?.trim() || n.t4?.trim() || n.bd?.trim()));
         }
 
+        function isWithin3DayWindow(d) {
+            const time = d.getTime();
+            return time === YESTERDAY.getTime() || time === REAL_TODAY.getTime() || time === TOMORROW.getTime();
+        }
+
         function getPreviousDateWithData(startDate) {
             const allNotes = JSON.parse(localStorage.getItem('levNotes') || "{}");
             const sortedDates = Object.keys(allNotes).filter(id => hasAnyData(id)).sort((a,b) => new Date(b) - new Date(a));
-            return sortedDates.find(dateStr => new Date(dateStr) < startDate);
+            
+            let target = sortedDates.find(dateStr => new Date(dateStr) < startDate);
+            
+            if (startDate.getTime() === TOMORROW.getTime()) return REAL_TODAY;
+            if (startDate.getTime() === REAL_TODAY.getTime()) return YESTERDAY;
+            
+            return target ? new Date(target) : null;
+        }
+
+        function getNextDateWithData(startDate) {
+            const allNotes = JSON.parse(localStorage.getItem('levNotes') || "{}");
+            const sortedDates = Object.keys(allNotes).filter(id => hasAnyData(id)).sort((a,b) => new Date(a) - new Date(b));
+            
+            if (startDate.getTime() === YESTERDAY.getTime()) return REAL_TODAY;
+            if (startDate.getTime() === REAL_TODAY.getTime()) return TOMORROW;
+
+            let target = sortedDates.find(dateStr => new Date(dateStr) > startDate);
+            return target ? new Date(target) : null;
         }
 
         function refreshUI() {
@@ -297,11 +370,18 @@
             nextBtn.classList.remove('disabled');
 
             if (activeTab === 'today') {
-                navMain.innerText = currentDay.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+                let dateTag = "";
+                if (currentDay.getTime() === REAL_TODAY.getTime()) dateTag = " (Today)";
+                else if (currentDay.getTime() === YESTERDAY.getTime()) dateTag = " (Yesterday)";
+                else if (currentDay.getTime() === TOMORROW.getTime()) dateTag = " (Tomorrow)";
+
+                navMain.innerText = currentDay.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + dateTag;
                 navSub.innerText = `Week ${getWeekNumber(currentDay)}, ${currentDay.getFullYear()}`;
                 if(currentDay.getTime() === REAL_TODAY.getTime()) navMain.classList.add('is-current');
-                currentDay >= TOMORROW ? nextBtn.classList.add('disabled') : null;
+                
+                if (!getNextDateWithData(currentDay)) nextBtn.classList.add('disabled');
                 if (!getPreviousDateWithData(currentDay)) prevBtn.classList.add('disabled');
+
                 loadNoteData();
                 checkLockStatus();
             } else if (activeTab === 'history') {
@@ -355,18 +435,21 @@
         }
 
         function createCard(id, data) {
-            const d = new Date(id);
-            return `<div class="history-card-container" id="hist-${id}"><div class="history-card-inner"><div class="h-front"><div style="font-weight:bold; cursor:pointer; margin-bottom:8px; font-size:12px;" onclick="goToDate('${id}')">${d.toLocaleDateString('en-US', {weekday:'short', day:'numeric'})} 🔗</div><div class="h-entry"><b>(1)</b> ${data.t1 || ''}</div><div class="h-entry"><b>{2}</b> ${data.t2a || ''}</div><div class="h-entry"><b>{2}</b> ${data.t2b || ''}</div><div class="h-entry" style="display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;max-height:2.6em;overflow:hidden;text-overflow:ellipsis;"><b>[4]</b> ${data.t4 || ''}</div><button class="flip-btn" onclick="flip('hist-${id}')">FLIP</button></div><div class="h-back"><p style="font-size:10px; line-height:1.4;">${data.bd || 'Empty'}</p><button class="flip-btn" onclick="flip('hist-${id}')">BACK</button></div></div></div>`;
+            const parts = id.split('-');
+            const d = new Date(parts[0], parts[1] - 1, parts[2]); 
+            const formattedDateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+            return `<div class="history-card-container" id="hist-${id}"><div class="history-card-inner"><div class="h-front"><div style="font-weight:bold; cursor:pointer; margin-bottom:8px; font-size:12px;" onclick="goToDate('${id}')">${formattedDateStr} 🔗</div><div class="h-entry"><b>(1)</b> ${data.t1 || ''}</div><div class="h-entry"><b>{2}</b> ${data.t2a || ''}</div><div class="h-entry"><b>{2}</b> ${data.t2b || ''}</div><div class="h-entry" style="display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;max-height:2.6em;overflow:hidden;text-overflow:ellipsis;"><b>[4]</b> ${data.t4 || ''}</div><button type="button" class="flip-btn" onclick="flip('hist-${id}')">FLIP</button></div><div class="h-back"><p style="font-size:10px; line-height:1.4;">${data.bd || 'Empty'}</p><button type="button" class="flip-btn" onclick="flip('hist-${id}')">BACK</button></div></div></div>`;
         }
 
         function changeScope(gap) {
             if (activeTab === 'today') {
                 if (gap === -1) {
-                    const prevDate = getPreviousDateWithData(currentDay);
-                    if (prevDate) currentDay = new Date(prevDate);
+                    const prev = getPreviousDateWithData(currentDay);
+                    if (prev) currentDay = prev;
                 } else {
-                    let target = new Date(currentDay); target.setDate(target.getDate() + 1);
-                    if (target <= TOMORROW) currentDay = target;
+                    const next = getNextDateWithData(currentDay);
+                    if (next) currentDay = next;
                 }
             } else if (activeTab === 'history') {
                 viewingWeekStart.setDate(viewingWeekStart.getDate() + (gap * 7));
@@ -384,12 +467,23 @@
         }
 
         function resetToCurrent() { currentDay = new Date(REAL_TODAY); viewingWeekStart = getWeekStart(REAL_TODAY); refreshUI(); }
-        function goToDate(id) { currentDay = new Date(id); viewingWeekStart = getWeekStart(currentDay); switchTab('today'); }
+        
+        function goToDate(id) {
+            const parts = id.split('-');
+            currentDay = new Date(parts[0], parts[1] - 1, parts[2]);
+            viewingWeekStart = getWeekStart(currentDay); 
+            switchTab('today'); 
+        }
+        
         function checkLockStatus() {
-            const isLocked = currentDay < new Date(REAL_TODAY.getTime() - 86400000);
+            const isEditable = isWithin3DayWindow(currentDay);
+            const isLocked = !isEditable;
+
             ['task-1', 'task-2a', 'task-2b', 'task-4', 'brain-dump', 'check-1', 'check-2a', 'check-2b', 'check-4'].forEach(f => document.getElementById(f).disabled = isLocked);
             document.getElementById('lock-msg').style.display = isLocked ? "block" : "none";
+            document.getElementById('clip-bar').style.display = isLocked ? "none" : "flex";
         }
+
         function loadNoteData() {
             const id = getSafeId(currentDay);
             const data = JSON.parse(localStorage.getItem('levNotes') || "{}")[id] || {};
@@ -405,6 +499,7 @@
             ['task-1', 'task-2a', 'task-2b', 'task-4'].forEach(f => expand(document.getElementById(f)));
             runLogic(false);
         }
+
         function autoSave() {
             if (document.getElementById('task-1').disabled) return;
             const id = getSafeId(currentDay);
@@ -414,6 +509,110 @@
             else { allNotes[id] = { t1, c1: document.getElementById('check-1').checked, t2a, c2a: document.getElementById('check-2a').checked, t2b, c2b: document.getElementById('check-2b').checked, t4, c4: document.getElementById('check-4').checked, bd }; }
             localStorage.setItem('levNotes', JSON.stringify(allNotes));
         }
+
+        function copyCurrentNote() {
+            const t1 = document.getElementById('task-1').value.trim();
+            const t2a = document.getElementById('task-2a').value.trim();
+            const t2b = document.getElementById('task-2b').value.trim();
+            const t4 = document.getElementById('task-4').value.trim();
+            const bd = document.getElementById('brain-dump').value.trim();
+
+            let textToCopy = `MUST:\n${t1}\n\nNEXT:\n${t2a}\n---\n${t2b}\n\nBEST:\n${t4}\n\nBRAIN DUMP:\n${bd}`;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    alert("Data copied to system clipboard!");
+                }).catch(() => {
+                    fallbackCopy(textToCopy);
+                });
+            } else {
+                fallbackCopy(textToCopy);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textarea = document.createElement("textarea");
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
+            alert("Data copied to system clipboard!");
+        }
+
+        function pasteToCurrentNote() {
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                navigator.clipboard.readText().then(text => {
+                    parseAndApplyText(text);
+                }).catch(() => {
+                    promptPasteFallback();
+                });
+            } else {
+                promptPasteFallback();
+            }
+        }
+
+        function promptPasteFallback() {
+            const userText = prompt("Paste your copied data here:");
+            if (userText) parseAndApplyText(userText);
+        }
+
+        function parseAndApplyText(text) {
+            if (!text || !text.trim()) {
+                alert("Clipboard is empty.");
+                return;
+            }
+
+            try {
+                let cleanText = text.replace(/\r\n/g, "\n");
+                let must = "", next1 = "", next2 = "", best = "", bd = "";
+
+                const mustIdx = cleanText.search(/MUST:/i);
+                const nextIdx = cleanText.search(/NEXT:/i);
+                const bestIdx = cleanText.search(/BEST:/i);
+                const bdIdx = cleanText.search(/BRAIN DUMP:/i);
+
+                if (mustIdx !== -1) {
+                    let end = (nextIdx !== -1) ? nextIdx : (bestIdx !== -1 ? bestIdx : (bdIdx !== -1 ? bdIdx : cleanText.length));
+                    must = cleanText.substring(mustIdx + 5, end).trim();
+                }
+
+                if (nextIdx !== -1) {
+                    let end = (bestIdx !== -1) ? bestIdx : (bdIdx !== -1 ? bdIdx : cleanText.length);
+                    let rawNext = cleanText.substring(nextIdx + 5, end).trim();
+                    let parts = rawNext.split(/---|\n---\n/);
+                    next1 = parts[0] ? parts[0].trim() : "";
+                    next2 = parts[1] ? parts[1].trim() : "";
+                }
+
+                if (bestIdx !== -1) {
+                    let end = (bdIdx !== -1) ? bdIdx : cleanText.length;
+                    best = cleanText.substring(bestIdx + 5, end).trim();
+                }
+
+                if (bdIdx !== -1) {
+                    bd = cleanText.substring(bdIdx + 11).trim();
+                }
+
+                let updated = false;
+                if (must) { document.getElementById('task-1').value = must; updated = true; }
+                if (next1) { document.getElementById('task-2a').value = next1; updated = true; }
+                if (next2) { document.getElementById('task-2b').value = next2; updated = true; }
+                if (best) { document.getElementById('task-4').value = best; updated = true; }
+                if (bd) { document.getElementById('brain-dump').value = bd; updated = true; }
+
+                if (updated) {
+                    ['task-1', 'task-2a', 'task-2b', 'task-4'].forEach(f => expand(document.getElementById(f)));
+                    runLogic(true);
+                    alert("Data parsed and pasted successfully!");
+                } else {
+                    alert("Could not detect MUST, NEXT, BEST or BRAIN DUMP tags in copied text.");
+                }
+            } catch(e) {
+                alert("Failed to parse clipboard data.");
+            }
+        }
+
         function runLogic(save = true) {
             const c1 = document.getElementById('check-1').checked;
             document.getElementById('sec-2').style.opacity = c1 ? "1" : "0.3";
@@ -423,8 +622,13 @@
             document.getElementById('sec-4').style.pointerEvents = (c1 && c2) ? "auto" : "none";
             if(save) autoSave();
         }
+
         function expand(el) { el.style.height = 'auto'; el.style.height = (el.scrollHeight) + 'px'; }
-        function flip(id) { document.getElementById(id).classList.toggle('flipped'); }
+        
+        function flip(id) { 
+            const elem = document.getElementById(id);
+            if (elem) elem.classList.toggle('flipped');
+        }
         
         function saveSettings() { 
             localStorage.setItem('levGoal', document.getElementById('goal-input').value); 
